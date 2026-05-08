@@ -1,36 +1,45 @@
 package com.gume.sonar.application.usecase;
 
+import com.gume.sonar.application.gateway.UserGateway;
 import com.gume.sonar.domain.User;
+import com.gume.sonar.domain.exception.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserUseCase {
 
+    private final UserGateway userGateway;
+
     public User create(User user) {
-        // To be implemented
-        return null;
+        return userGateway.save(user);
     }
 
     public User findById(UUID id) {
-        // To be implemented
-        return null;
+        return userGateway.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public List<User> findAll() {
-        // To be implemented
-        return Collections.emptyList();
+        return userGateway.findAll();
     }
 
     public User update(UUID id, User user) {
-        // To be implemented
-        return null;
+        User existingUser = findById(id);
+        
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPassword(user.getPassword());
+        
+        return userGateway.save(existingUser);
     }
 
     public void delete(UUID id) {
-        // To be implemented
+        User existingUser = findById(id);
+        userGateway.deleteById(existingUser.getId());
     }
 }
