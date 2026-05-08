@@ -6,7 +6,6 @@ import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
 import com.gume.sonar.entrypoint.controller.dto.UserDto;
 import com.gume.sonar.entrypoint.mapper.UserDtoMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
