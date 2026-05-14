@@ -1,0 +1,58 @@
+curl -X POST https://api.assemblyai.com/v2/transcript \
+     -H "Authorization: <apiKey>" \
+     -H "Content-Type: application/json" \
+     -d '{
+  "audio_url": "https://assembly.ai/wildfires.mp3",
+  "speech_models": [
+    "string"
+  ],
+  "audio_end_at": 280,
+  "audio_start_from": 10,
+  "auto_highlights": true,
+  "content_safety": true,
+  "custom_spelling": [],
+  "disfluencies": false,
+  "domain": null,
+  "entity_detection": true,
+  "filter_profanity": true,
+  "format_text": true,
+  "iab_categories": true,
+  "language_code": "en_us",
+  "language_confidence_threshold": 0.7,
+  "language_detection": true,
+  "multichannel": true,
+  "punctuate": true,
+  "redact_pii": true,
+  "redact_pii_audio": true,
+  "redact_pii_audio_quality": "mp3",
+  "redact_pii_policies": [
+    "us_social_security_number",
+    "credit_card_number"
+  ],
+  "redact_pii_sub": "hash",
+  "remove_audio_tags": null,
+  "sentiment_analysis": true,
+  "speaker_labels": true,
+  "speakers_expected": 2,
+  "speech_threshold": 0.5,
+  "speech_understanding": {
+    "request": {
+      "translation": {
+        "target_languages": [
+          "es",
+          "de"
+        ],
+        "formal": true,
+        "match_original_utterance": true
+      }
+    }
+  },
+  "webhook_auth_header_name": "webhook-secret",
+  "webhook_auth_header_value": "webhook-secret-value",
+  "webhook_url": "https://your-webhook-url/path",
+  "auto_chapters": false,
+  "custom_topics": true,
+  "speech_model": null,
+  "summarization": false,
+  "topics": []
+}'
