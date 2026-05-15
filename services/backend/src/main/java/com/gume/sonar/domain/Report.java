@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.gume.sonar.domain.enums.ReportStatus;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -22,4 +24,5 @@ public class Report {
     private String analysis;
     private String transcript;
     private LocalDateTime creationDate;
+    private ReportStatus status;
 }

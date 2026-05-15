@@ -18,6 +18,7 @@ public class ReportDtoMapper {
                 .analysis(domain.getAnalysis())
                 .transcript(domain.getTranscript())
                 .creationDate(domain.getCreationDate())
+                .status(domain.getStatus())
                 .build();
     }
 
@@ -34,6 +35,7 @@ public class ReportDtoMapper {
                 .analysis(dto.getAnalysis())
                 .transcript(dto.getTranscript())
                 .creationDate(dto.getCreationDate())
+                .status(dto.getStatus())
                 .build();
     }
 }

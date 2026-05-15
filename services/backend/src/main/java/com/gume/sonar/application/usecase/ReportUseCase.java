@@ -2,7 +2,10 @@ package com.gume.sonar.application.usecase;
 
 import com.gume.sonar.application.gateway.ReportGateway;
 import com.gume.sonar.domain.Report;
+import com.gume.sonar.domain.Transcricao;
+import com.gume.sonar.domain.enums.ReportStatus;
 import com.gume.sonar.domain.exception.ReportNotFoundException;
+import com.gume.sonar.infrastructure.provider.dto.BuscaTranscricaoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +17,44 @@ import java.util.UUID;
 public class ReportUseCase {
 
     private final ReportGateway reportGateway;
+    private final TranscricaoApiUseCase transcricaoApiUseCase;
+    private final TranscricaoUseCase transcricaoUseCase;
 
     public Report create(Report report) {
-        // To be implemented later
         if (report.getId() == null) {
             report.setId(UUID.randomUUID());
         }
-        return report;
+        
+        // 1. Send URL to AssemblyAI
+        UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(report.getTranscript()); // Assuming transcript field temporarily holds the audio URL based on rules
+        
+        // 2. Save Transcricao domain
+        Transcricao transcricao = Transcricao.builder()
+                .id(transcriptionId)
+                .urlAudio(report.getTranscript())
+                .build();
+        transcricaoUseCase.create(transcricao);
+        
+        // 3. Save Report as PROCESSING
+        report.setStatus(ReportStatus.PROCESSING);
+        report.setTranscript(null); // Clear URL, we will set the actual text later
+        return reportGateway.save(report);
+    }
+    
+    public void finalizarProcessoTranscricao(UUID transcriptionId, UUID reportId) {
+        // 1. Retrieve Transcricao from DB and delete
+        Transcricao transcricao = transcricaoUseCase.findById(transcriptionId);
+        transcricaoUseCase.delete(transcricao.getId());
+        
+        // 2. Call AssemblyAI to fetch transcription text
+        BuscaTranscricaoResponseDto transcriptionDto = transcricaoApiUseCase.buscarTranscricaoCompleta(transcriptionId);
+        
+        // 3. Update Report to COMPLETED with text
+        Report report = findById(reportId);
+        report.setTranscript(transcriptionDto.getText());
+        report.setStatus(ReportStatus.COMPLETED);
+        
+        reportGateway.save(report);
     }
 
     public Report findById(UUID id) {

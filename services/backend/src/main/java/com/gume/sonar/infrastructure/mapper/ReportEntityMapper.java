@@ -18,6 +18,7 @@ public class ReportEntityMapper {
                 .analysis(domain.getAnalysis())
                 .transcript(domain.getTranscript())
                 .creationDate(domain.getCreationDate())
+                .status(domain.getStatus())
                 .build();
     }
 
@@ -34,6 +35,7 @@ public class ReportEntityMapper {
                 .analysis(entity.getAnalysis())
                 .transcript(entity.getTranscript())
                 .creationDate(entity.getCreationDate())
+                .status(entity.getStatus())
                 .build();
     }
 }
