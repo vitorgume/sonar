@@ -19,6 +19,7 @@ public class ReportUseCase {
     private final ReportGateway reportGateway;
     private final TranscricaoApiUseCase transcricaoApiUseCase;
     private final TranscricaoUseCase transcricaoUseCase;
+    private final AnaliseIAUseCase analiseIAUseCase;
 
     public Report create(Report report) {
         if (report.getId() == null) {
@@ -41,7 +42,7 @@ public class ReportUseCase {
         return reportGateway.save(report);
     }
     
-    public void finalizarProcessoTranscricao(UUID transcriptionId, UUID reportId) {
+    public void finalizarProcessoCriacaoReport(UUID transcriptionId, UUID reportId) {
         // 1. Retrieve Transcricao from DB and delete
         Transcricao transcricao = transcricaoUseCase.findById(transcriptionId);
         transcricaoUseCase.delete(transcricao.getId());
@@ -52,6 +53,11 @@ public class ReportUseCase {
         // 3. Update Report to COMPLETED with text
         Report report = findById(reportId);
         report.setTranscript(transcriptionDto.getText());
+
+        // 4. Call AnaliseIA to analyze the text
+        String analysis = analiseIAUseCase.analisarTranscricao(report.getTranscript());
+        report.setAnalysis(analysis);
+
         report.setStatus(ReportStatus.COMPLETED);
         
         reportGateway.save(report);

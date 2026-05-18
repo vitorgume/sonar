@@ -18,4 +18,7 @@ public class EnvioTranscricaoRequestDto {
     
     @JsonProperty("language_code")
     private String languageCode;
+
+    @JsonProperty("webhook_url")
+    private String webhookUrl;
 }

@@ -24,6 +24,9 @@ public class TranscricaoApiDataProvider implements TranscricaoApiGateway {
     
     @Value("${assemblyai.api.key:default_api_key}")
     private String apiKey;
+    
+    @Value("${assemblyai.webhook.url:default_webhook_url}")
+    private String webhookUrl;
 
     private static final String API_URL = "https://api.assemblyai.com/v2/transcript";
     private static final int MAX_RETRIES = 3;
@@ -33,6 +36,7 @@ public class TranscricaoApiDataProvider implements TranscricaoApiGateway {
         EnvioTranscricaoRequestDto requestDto = EnvioTranscricaoRequestDto.builder()
                 .audioUrl(audioUrl)
                 .languageCode("pt")
+                .webhookUrl(webhookUrl)
                 .build();
 
         try (HttpClient httpClient = HttpClient.newHttpClient()) {
