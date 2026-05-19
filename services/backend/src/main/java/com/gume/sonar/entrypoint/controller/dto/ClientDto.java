@@ -1,12 +1,10 @@
-package com.gume.sonar.domain;
+package com.gume.sonar.entrypoint.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import com.gume.sonar.domain.enums.ReportStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,13 +14,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Report {
+public class ClientDto {
     private UUID id;
-    private String title;
-    private User user;
-    private Client client;
-    private String analysis;
-    private String transcript;
+    private String name;
+    private UserDto user;
     private LocalDateTime creationDate;
-    private ReportStatus status;
 }

@@ -20,7 +20,7 @@ public class ReportDto {
     private UUID id;
     private String title;
     private UserDto user;
-    private String client;
+    private ClientDto client;
     private String analysis;
     private String transcript;
     private LocalDateTime creationDate;
