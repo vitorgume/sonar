@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Client, type User } from '../../domain/models/Client';
-import { ClientMockService } from '../services/ClientMockService';
+import { ClientService } from '../services/ClientService';
 
 export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -12,7 +12,7 @@ export const useClients = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await ClientMockService.getAll();
+      const data = await ClientService.getAll();
       setClients(data);
     } catch (err) {
       setError('Failed to fetch clients');
@@ -23,7 +23,7 @@ export const useClients = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const data = await ClientMockService.getMockUsers();
+      const data = await ClientService.getUsers();
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users', err);
@@ -38,7 +38,7 @@ export const useClients = () => {
   const createClient = async (data: Omit<Client, 'id' | 'creationDate'>) => {
     setIsLoading(true);
     try {
-      const newClient = await ClientMockService.create(data);
+      const newClient = await ClientService.create(data);
       setClients((prev) => [...prev, newClient]);
       return newClient;
     } catch (err) {
@@ -52,7 +52,7 @@ export const useClients = () => {
   const updateClient = async (id: string, data: Partial<Omit<Client, 'id' | 'creationDate'>>) => {
     setIsLoading(true);
     try {
-      const updatedClient = await ClientMockService.update(id, data);
+      const updatedClient = await ClientService.update(id, data);
       setClients((prev) => prev.map((c) => (c.id === id ? updatedClient : c)));
       return updatedClient;
     } catch (err) {
@@ -66,7 +66,7 @@ export const useClients = () => {
   const deleteClient = async (id: string) => {
     setIsLoading(true);
     try {
-      await ClientMockService.delete(id);
+      await ClientService.delete(id);
       setClients((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       setError('Failed to delete client');

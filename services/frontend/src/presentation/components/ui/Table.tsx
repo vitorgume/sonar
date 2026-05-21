@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 export const Table = ({ children }: { children: ReactNode }) => (
   <div className="w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
@@ -32,8 +32,8 @@ export const Th = ({ children, className = '' }: { children: ReactNode; classNam
   </th>
 );
 
-export const Td = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
-  <td className={`px-6 py-4 ${className}`}>
+export const Td = ({ children, className = '', colSpan }: { children: ReactNode; className?: string; colSpan?: number }) => (
+  <td className={`px-6 py-4 ${className}`} colSpan={colSpan}>
     {children}
   </td>
 );

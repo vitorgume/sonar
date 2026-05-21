@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useClients } from '../../../application/hooks/useClients';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../../components/ui/Table';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { ClientFormModal } from './ClientFormModal';

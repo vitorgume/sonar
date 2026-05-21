@@ -17,9 +17,6 @@ public class ClientUseCase {
     private final ClientGateway clientGateway;
 
     public Client create(Client client) {
-        if (client.getId() == null) {
-            client.setId(UUID.randomUUID());
-        }
         if (client.getCreationDate() == null) {
             client.setCreationDate(LocalDateTime.now());
         }
