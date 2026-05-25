@@ -17,9 +17,6 @@ public class PromptUseCase {
     private final PromptGateway promptGateway;
 
     public Prompt create(Prompt prompt) {
-        if (prompt.getId() == null) {
-            prompt.setId(UUID.randomUUID());
-        }
         if (prompt.getLastUpdate() == null) {
             prompt.setLastUpdate(LocalDateTime.now());
         }
