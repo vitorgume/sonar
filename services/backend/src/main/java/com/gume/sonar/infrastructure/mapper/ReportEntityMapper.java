@@ -17,6 +17,7 @@ public class ReportEntityMapper {
                 .client(ClientEntityMapper.toEntity(domain.getClient()))
                 .analysis(domain.getAnalysis())
                 .transcript(domain.getTranscript())
+                .audioFileKey(domain.getAudioFileKey())
                 .creationDate(domain.getCreationDate())
                 .status(domain.getStatus())
                 .build();
@@ -34,6 +35,7 @@ public class ReportEntityMapper {
                 .client(ClientEntityMapper.toDomain(entity.getClient()))
                 .analysis(entity.getAnalysis())
                 .transcript(entity.getTranscript())
+                .audioFileKey(entity.getAudioFileKey())
                 .creationDate(entity.getCreationDate())
                 .status(entity.getStatus())
                 .build();

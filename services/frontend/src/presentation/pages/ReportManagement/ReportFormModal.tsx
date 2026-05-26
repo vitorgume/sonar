@@ -3,25 +3,32 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useClients } from '../../../application/hooks/useClients';
+import { Upload } from 'lucide-react';
 
 interface ReportFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, clientId: string, transcript: string) => Promise<void>;
+  onSubmit: (title: string, clientId: string, audioFile: File) => Promise<void>;
 }
 
 export const ReportFormModal: React.FC<ReportFormModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [title, setTitle] = useState('');
   const [clientId, setClientId] = useState('');
-  const [transcript, setTranscript] = useState('');
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
   const { clients, isLoading: isClientsLoading } = useClients();
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setAudioFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !clientId || !transcript.trim()) {
+    if (!title.trim() || !clientId || !audioFile) {
       setError('Todos os campos são obrigatórios.');
       return;
     }
@@ -29,10 +36,10 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({ isOpen, onClos
     setIsSubmitting(true);
     setError('');
     try {
-      await onSubmit(title, clientId, transcript);
+      await onSubmit(title, clientId, audioFile);
       setTitle('');
       setClientId('');
-      setTranscript('');
+      setAudioFile(null);
       onClose();
     } catch (err) {
       setError('Erro ao criar o relatório.');
@@ -72,14 +79,28 @@ export const ReportFormModal: React.FC<ReportFormModalProps> = ({ isOpen, onClos
         </div>
 
         <div className="flex flex-col gap-1 w-full">
-          <label className="text-sm font-semibold text-slate-900">Transcrição (Áudio da Call)</label>
-          <textarea
-            className="bg-white border border-slate-300 focus:border-blue-500 focus:ring-blue-500 text-slate-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 transition-colors resize-none disabled:opacity-50 h-32"
-            placeholder="Cole aqui a transcrição da call..."
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            disabled={isSubmitting}
-          />
+          <label className="text-sm font-semibold text-slate-900">Áudio da Call</label>
+          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors disabled:opacity-50">
+            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <Upload className="w-8 h-8 mb-2 text-slate-400" />
+              <p className="mb-2 text-sm text-slate-500">
+                <span className="font-semibold">Clique para fazer upload</span> ou arraste o arquivo
+              </p>
+              <p className="text-xs text-slate-500">MP3, WAV, M4A (Max. 50MB)</p>
+              {audioFile && (
+                <p className="mt-2 text-sm font-medium text-blue-600 text-center px-4 truncate w-full">
+                  Arquivo selecionado: {audioFile.name}
+                </p>
+              )}
+            </div>
+            <input 
+              type="file" 
+              className="hidden" 
+              accept="audio/*"
+              onChange={handleFileChange}
+              disabled={isSubmitting}
+            />
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 mt-4">

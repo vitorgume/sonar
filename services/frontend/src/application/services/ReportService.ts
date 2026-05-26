@@ -1,57 +1,46 @@
 import { type Report } from '../../domain/models/Report';
 
-// Initial Mock Data
-let mockReports: Report[] = [
-  {
-    id: '1',
-    title: 'Q1 Sales Call with Acme Corp',
-    user: { id: 'u1', name: 'John Doe' },
-    client: { id: 'c1', name: 'Acme Corp', user: { id: 'u1', name: 'John Doe' }, creationDate: new Date().toISOString() },
-    analysis: 'Positive sentiment overall. The client is interested in the enterprise plan. They highlighted some concerns regarding implementation time.',
-    transcript: 'John: Hello, thanks for joining.\nClient: Hi John, let\'s get straight to the pricing.\nJohn: Sure, we have a few options...',
-    creationDate: new Date(Date.now() - 86400000).toISOString(),
-    status: 'COMPLETED',
-  },
-  {
-    id: '2',
-    title: 'Initial Sync - Globex',
-    user: { id: 'u1', name: 'John Doe' },
-    client: { id: 'c2', name: 'Globex', user: { id: 'u1', name: 'John Doe' }, creationDate: new Date().toISOString() },
-    analysis: '',
-    transcript: '',
-    creationDate: new Date().toISOString(),
-    status: 'PROCESSING',
-  }
-];
+interface ApiResponse<T> {
+  dado: T;
+  erro: { mensagens: string[] } | null;
+}
+
+const API_BASE_URL = '/api';
 
 export const ReportService = {
   getAll: async (): Promise<Report[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve([...mockReports]), 500);
-    });
+    const response = await fetch(`${API_BASE_URL}/reports`);
+    if (!response.ok) throw new Error('Failed to fetch reports');
+    const result: ApiResponse<Report[]> = await response.json();
+    return result.dado;
   },
 
-  create: async (data: { title: string; clientId: string; transcript: string }): Promise<Report> => {
-    return new Promise((resolve) => {
-      const newReport: Report = {
-        id: crypto.randomUUID(),
-        title: data.title,
-        user: { id: 'u1', name: 'Current User' }, // Mocking user
-        client: { id: data.clientId, name: `Client ${data.clientId}`, user: { id: 'u1', name: 'Current User' }, creationDate: new Date().toISOString() }, // Mocking client
-        transcript: data.transcript,
-        analysis: '', // Analysis will be generated eventually
-        creationDate: new Date().toISOString(),
-        status: 'PROCESSING',
-      };
-      mockReports = [...mockReports, newReport];
-      setTimeout(() => resolve(newReport), 500);
+  create: async (data: { title: string; clientId: string; audioFileKey: string }): Promise<Report> => {
+    const payload = {
+      title: data.title,
+      client: { id: data.clientId },
+      transcript: '',
+      audioFileKey: data.audioFileKey,
+      // Backend expects a UserDto if it doesn't resolve from context.
+      // Passing a mocked user object to satisfy typical dto requirements
+      user: { id: '00000000-0000-0000-0000-000000000000', name: 'Current User' } 
+    };
+
+    const response = await fetch(`${API_BASE_URL}/reports`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
+
+    if (!response.ok) throw new Error('Failed to create report');
+    const result: ApiResponse<Report> = await response.json();
+    return result.dado;
   },
 
   delete: async (id: string): Promise<void> => {
-    return new Promise((resolve) => {
-      mockReports = mockReports.filter((r) => r.id !== id);
-      setTimeout(() => resolve(), 300);
+    const response = await fetch(`${API_BASE_URL}/reports/${id}`, {
+      method: 'DELETE',
     });
+    if (!response.ok) throw new Error('Failed to delete report');
   }
 };

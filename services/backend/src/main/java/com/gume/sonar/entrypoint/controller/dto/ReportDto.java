@@ -23,6 +23,7 @@ public class ReportDto {
     private ClientDto client;
     private String analysis;
     private String transcript;
+    private String audioFileKey;
     private LocalDateTime creationDate;
     private ReportStatus status;
 }

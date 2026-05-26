@@ -84,6 +84,10 @@ export const ReportManagementPage: React.FC = () => {
                       <button 
                         className="p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50"
                         title="Ver Detalhes"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedReport(report);
+                        }}
                       >
                         <Eye size={18} />
                       </button>
@@ -106,7 +110,7 @@ export const ReportManagementPage: React.FC = () => {
       <ReportFormModal 
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
-        onSubmit={createReport} 
+        onSubmit={async (title: string, clientId: string, audioFile: File) => { await createReport(title, clientId, audioFile); }}
       />
 
       <ReportDetailsModal 

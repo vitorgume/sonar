@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Report } from '../../domain/models/Report';
 import { ReportService } from '../services/ReportService';
+import { FileService } from '../services/FileService';
 
 export const useReports = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReports = useCallback(async () => {
-    setIsLoading(true);
+  const fetchReports = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError(null);
     try {
       const data = await ReportService.getAll();
@@ -16,22 +17,37 @@ export const useReports = () => {
     } catch (err) {
       setError('Failed to fetch reports');
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchReports();
+    fetchReports(true); // Initial fetch
+
+    // Poll every 1 minute to update PROCESSING status
+    const intervalId = setInterval(() => {
+      fetchReports(false); // Background fetch without triggering full loader
+    }, 60000);
+
+    return () => clearInterval(intervalId);
   }, [fetchReports]);
 
-  const createReport = async (title: string, clientId: string, transcript: string) => {
+  const createReport = async (title: string, clientId: string, audioFile: File) => {
     setIsLoading(true);
     try {
-      const newReport = await ReportService.create({ title, clientId, transcript });
+      // 1. Get Pre-Signed URL
+      const { uploadUrl, fileKey } = await FileService.getPreSignedUrl(audioFile.name, audioFile.type);
+      
+      // 2. Upload to S3
+      await FileService.uploadToS3(uploadUrl, audioFile);
+
+      // 3. Create Report with fileKey
+      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey });
+      
       setReports((prev) => [...prev, newReport]);
       return newReport;
     } catch (err) {
-      setError('Failed to create report');
+      setError('Failed to create report and upload file');
       throw err;
     } finally {
       setIsLoading(false);

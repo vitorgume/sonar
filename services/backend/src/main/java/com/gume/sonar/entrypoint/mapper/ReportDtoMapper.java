@@ -17,6 +17,7 @@ public class ReportDtoMapper {
                 .client(ClientDtoMapper.toDto(domain.getClient()))
                 .analysis(domain.getAnalysis())
                 .transcript(domain.getTranscript())
+                .audioFileKey(domain.getAudioFileKey())
                 .creationDate(domain.getCreationDate())
                 .status(domain.getStatus())
                 .build();
@@ -34,6 +35,7 @@ public class ReportDtoMapper {
                 .client(ClientDtoMapper.toDomain(dto.getClient()))
                 .analysis(dto.getAnalysis())
                 .transcript(dto.getTranscript())
+                .audioFileKey(dto.getAudioFileKey())
                 .creationDate(dto.getCreationDate())
                 .status(dto.getStatus())
                 .build();

@@ -50,6 +50,8 @@ public class ReportEntity {
     @Column(columnDefinition = "TEXT")
     private String transcript;
     
+    private String audioFileKey;
+    
     private LocalDateTime creationDate;
     
     @Enumerated(EnumType.STRING)

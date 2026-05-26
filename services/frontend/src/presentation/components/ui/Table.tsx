@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, HTMLAttributes } from 'react';
 
 export const Table = ({ children }: { children: ReactNode }) => (
   <div className="w-full overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
@@ -20,8 +20,8 @@ export const Tbody = ({ children }: { children: ReactNode }) => (
   </tbody>
 );
 
-export const Tr = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
-  <tr className={`hover:bg-slate-50 transition-colors ${className}`}>
+export const Tr = ({ children, className = '', ...props }: HTMLAttributes<HTMLTableRowElement>) => (
+  <tr className={`hover:bg-slate-50 transition-colors ${className}`} {...props}>
     {children}
   </tr>
 );
