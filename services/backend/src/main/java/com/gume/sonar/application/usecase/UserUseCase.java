@@ -28,6 +28,11 @@ public class UserUseCase {
         return userGateway.findAll();
     }
 
+    public User findByEmail(String email) {
+        return userGateway.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(null)); // You might want to create a specific exception or use a generic one, but for now we throw UserNotFoundException
+    }
+
     public User update(UUID id, User user) {
         User existingUser = findById(id);
         

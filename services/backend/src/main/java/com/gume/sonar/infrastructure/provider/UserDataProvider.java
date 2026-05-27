@@ -40,6 +40,12 @@ public class UserDataProvider implements UserGateway {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(UserEntityMapper::toDomain);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         userRepository.deleteById(id);
     }
