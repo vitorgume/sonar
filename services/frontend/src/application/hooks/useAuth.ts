@@ -2,20 +2,25 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import type { LoginCredentials } from '../../domain/models/Auth';
+import { useAuthContext } from '../../presentation/context/AuthContext';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { signIn, signOut: contextSignOut } = useAuthContext();
 
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await AuthService.login(credentials);
-      // Here we could save token to localStorage or context
-      localStorage.setItem('sonar_token', response.token);
-      localStorage.setItem('sonar_user', JSON.stringify({ userId: response.userId, name: response.name }));
+      
+      // Salva no Contexto/LocalStorage através do AuthContext
+      signIn({
+        userId: response.userId,
+        name: response.name || 'Usuário',
+      });
       
       // Redirect to report management screen
       navigate('/reports');
@@ -27,9 +32,7 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    localStorage.removeItem('sonar_token');
-    localStorage.removeItem('sonar_user');
-    navigate('/login');
+    contextSignOut();
   };
 
   return {

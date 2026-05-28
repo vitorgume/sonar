@@ -5,11 +5,9 @@ interface ApiResponse<T> {
   erro: { mensagens: string[] } | null;
 }
 
-const API_BASE_URL = '/api';
-
 export const AuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),

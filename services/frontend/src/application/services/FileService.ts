@@ -3,11 +3,9 @@ interface ApiResponse<T> {
   erro: { mensagens: string[] } | null;
 }
 
-const API_BASE_URL = '/api';
-
 export const FileService = {
   getPreSignedUrl: async (fileName: string, contentType: string): Promise<{ uploadUrl: string; fileKey: string }> => {
-    const response = await fetch(`${API_BASE_URL}/files/presigned-url`, {
+    const response = await fetch(` /files/presigned-url`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileName, contentType }),

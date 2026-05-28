@@ -5,11 +5,10 @@ interface ApiResponse<T> {
   erro: { mensagens: string[] } | null;
 }
 
-const API_BASE_URL = '/api';
 
 export const ReportService = {
   getAll: async (): Promise<Report[]> => {
-    const response = await fetch(`${API_BASE_URL}/reports`);
+    const response = await fetch(` /reports`);
     if (!response.ok) throw new Error('Failed to fetch reports');
     const result: ApiResponse<Report[]> = await response.json();
     return result.dado;
@@ -26,7 +25,7 @@ export const ReportService = {
       user: { id: '00000000-0000-0000-0000-000000000000', name: 'Current User' } 
     };
 
-    const response = await fetch(`${API_BASE_URL}/reports`, {
+    const response = await fetch(` /reports`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -38,7 +37,7 @@ export const ReportService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/reports/${id}`, {
+    const response = await fetch(` /reports/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete report');

@@ -51,14 +51,14 @@ export const PromptManagementPage: React.FC = () => {
 
   if (loading && !activePromptId && prompts.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-50 min-h-screen">
+      <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 p-8 bg-slate-50 min-h-screen font-sans">
+    <div className="flex flex-col flex-1 p-8 font-sans">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">
         
         {/* Header */}
