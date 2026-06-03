@@ -1,9 +1,10 @@
-package com.gume.sonar.entrypoint.controller;
+    package com.gume.sonar.entrypoint.controller;
 
 import com.gume.sonar.application.usecase.ReportUseCase;
 import com.gume.sonar.domain.Report;
 import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
 import com.gume.sonar.entrypoint.controller.dto.ReportDto;
+import com.gume.sonar.entrypoint.controller.dto.TranscriptionWebhookDto;
 import com.gume.sonar.entrypoint.mapper.ReportDtoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -69,5 +70,16 @@ public class ReportController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         reportUseCase.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<Void> transcriptionWebhook(
+            @RequestBody TranscriptionWebhookDto webhookDto) {
+        
+        if ("completed".equalsIgnoreCase(webhookDto.getStatus())) {
+            reportUseCase.finalizarProcessoCriacaoReport(webhookDto.getTranscriptId());
+        }
+        
+        return ResponseEntity.ok().build();
     }
 }

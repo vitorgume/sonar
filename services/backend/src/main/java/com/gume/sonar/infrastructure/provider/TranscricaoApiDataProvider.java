@@ -28,7 +28,9 @@ public class TranscricaoApiDataProvider implements TranscricaoApiGateway {
     @Value("${assemblyai.webhook.url:default_webhook_url}")
     private String webhookUrl;
 
-    private static final String API_URL = "https://api.assemblyai.com/v2/transcript";
+    @Value("${api.url.transcript}")
+    private String transcriptApiUrl;
+
     private static final int MAX_RETRIES = 3;
 
     @Override
@@ -41,11 +43,12 @@ public class TranscricaoApiDataProvider implements TranscricaoApiGateway {
 
         try (HttpClient httpClient = HttpClient.newHttpClient()) {
             String requestBody = objectMapper.writeValueAsString(requestDto);
+            String url = transcriptApiUrl + "/transcript";
 
             for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
                 try {
                     HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create(API_URL))
+                            .uri(URI.create(url))
                             .header("Authorization", apiKey)
                             .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -75,7 +78,7 @@ public class TranscricaoApiDataProvider implements TranscricaoApiGateway {
 
     @Override
     public BuscaTranscricaoResponseDto buscarTranscricaoCompleta(UUID transcriptionId) {
-        String url = API_URL + "/" + transcriptionId.toString();
+        String url = transcriptApiUrl + "/transcript/" + transcriptionId.toString();
 
         try (HttpClient httpClient = HttpClient.newHttpClient()) {
             for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {

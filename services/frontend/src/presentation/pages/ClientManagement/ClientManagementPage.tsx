@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useClients } from '../../../application/hooks/useClients';
+import { useAuthContext } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../../components/ui/Table';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
@@ -7,7 +8,8 @@ import { ClientFormModal } from './ClientFormModal';
 import { type Client, type User } from '../../../domain/models/Client';
 
 export const ClientManagementPage: React.FC = () => {
-  const { clients, users, isLoading, createClient, updateClient, deleteClient } = useClients();
+  const { clients, isLoading, createClient, updateClient, deleteClient } = useClients();
+  const { user: authUser } = useAuthContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
@@ -28,11 +30,21 @@ export const ClientManagementPage: React.FC = () => {
     setClientToEdit(null);
   };
 
-  const handleSubmit = async (data: { name: string; user: User }) => {
+  const handleSubmit = async (data: { name: string }) => {
+    if (!authUser) return;
+    
+    const clientData = {
+      name: data.name,
+      user: {
+        id: authUser.userId,
+        name: authUser.name
+      }
+    };
+
     if (clientToEdit) {
-      await updateClient(clientToEdit.id, data);
+      await updateClient(clientToEdit.id, clientData);
     } else {
-      await createClient(data);
+      await createClient(clientData);
     }
   };
 
@@ -120,7 +132,6 @@ export const ClientManagementPage: React.FC = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         client={clientToEdit}
-        users={users}
         isLoading={isLoading}
       />
     </div>

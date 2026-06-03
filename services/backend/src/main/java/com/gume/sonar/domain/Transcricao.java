@@ -18,4 +18,5 @@ public class Transcricao {
     private UUID id;
     private String urlAudio;
     private LocalDateTime creationDate;
+    private Report report;
 }

@@ -1,4 +1,5 @@
 import { type Report } from '../../domain/models/Report';
+import { API_BASE_URL } from '../config/env';
 
 interface ApiResponse<T> {
   dado: T;
@@ -8,7 +9,7 @@ interface ApiResponse<T> {
 
 export const ReportService = {
   getAll: async (): Promise<Report[]> => {
-    const response = await fetch(` /reports`);
+    const response = await fetch(`${API_BASE_URL}/reports`);
     if (!response.ok) throw new Error('Failed to fetch reports');
     const result: ApiResponse<Report[]> = await response.json();
     return result.dado;
@@ -25,7 +26,7 @@ export const ReportService = {
       user: { id: '00000000-0000-0000-0000-000000000000', name: 'Current User' } 
     };
 
-    const response = await fetch(` /reports`, {
+    const response = await fetch(`${API_BASE_URL}/reports`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -37,7 +38,7 @@ export const ReportService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await fetch(` /reports/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/reports/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) throw new Error('Failed to delete report');

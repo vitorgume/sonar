@@ -24,7 +24,8 @@ export const useClients = () => {
   const fetchUsers = useCallback(async () => {
     try {
       const data = await ClientService.getUsers();
-      setUsers(data);
+      // Convert AuthContext User type to domain Client User type with required id field
+      setUsers(data as unknown as User[]);
     } catch (err) {
       console.error('Failed to fetch users', err);
     }
@@ -78,7 +79,6 @@ export const useClients = () => {
 
   return {
     clients,
-    users,
     isLoading,
     error,
     createClient,

@@ -14,6 +14,7 @@ public class TranscricaoEntityMapper {
                 .id(domain.getId())
                 .urlAudio(domain.getUrlAudio())
                 .creationDate(domain.getCreationDate())
+                .report(ReportEntityMapper.toEntity(domain.getReport()))
                 .build();
     }
 
@@ -26,6 +27,7 @@ public class TranscricaoEntityMapper {
                 .id(entity.getId())
                 .urlAudio(entity.getUrlAudio())
                 .creationDate(entity.getCreationDate())
+                .report(ReportEntityMapper.toDomain(entity.getReport()))
                 .build();
     }
 }

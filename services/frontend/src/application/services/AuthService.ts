@@ -1,4 +1,5 @@
 import type { AuthResponse, LoginCredentials } from '../../domain/models/Auth';
+import { API_BASE_URL } from '../config/env';
 
 interface ApiResponse<T> {
   dado: T;
@@ -7,7 +8,7 @@ interface ApiResponse<T> {
 
 export const AuthService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await fetch(`/login`, {
+    const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),

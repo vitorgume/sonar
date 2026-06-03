@@ -34,15 +34,21 @@ public class ReportUseCase {
                 .id(transcriptionId)
                 .urlAudio(report.getTranscript())
                 .build();
-        transcricaoUseCase.create(transcricao);
+        
         
         // 3. Save Report as PROCESSING
         report.setStatus(ReportStatus.PROCESSING);
         report.setTranscript(null); // Clear URL, we will set the actual text later
-        return reportGateway.save(report);
+
+        Report reportSalvo = reportGateway.save(report);
+    
+        transcricao.setReport(reportSalvo);
+        transcricaoUseCase.create(transcricao);
+
+        return reportSalvo;
     }
     
-    public void finalizarProcessoCriacaoReport(UUID transcriptionId, UUID reportId) {
+    public void finalizarProcessoCriacaoReport(UUID transcriptionId) {
         // 1. Retrieve Transcricao from DB and delete
         Transcricao transcricao = transcricaoUseCase.findById(transcriptionId);
         transcricaoUseCase.delete(transcricao.getId());
@@ -51,7 +57,7 @@ public class ReportUseCase {
         BuscaTranscricaoResponseDto transcriptionDto = transcricaoApiUseCase.buscarTranscricaoCompleta(transcriptionId);
         
         // 3. Update Report to COMPLETED with text
-        Report report = findById(reportId);
+        Report report = findById(transcricao.getReport().getId());
         report.setTranscript(transcriptionDto.getText());
 
         // 4. Call AnaliseIA to analyze the text
