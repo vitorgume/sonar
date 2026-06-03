@@ -6,29 +6,23 @@ interface ApiResponse<T> {
   erro: { mensagens: string[] } | null;
 }
 
-
 export const ReportService = {
-  getAll: async (): Promise<Report[]> => {
-    const response = await fetch(`${API_BASE_URL}/reports`);
-    if (!response.ok) throw new Error('Failed to fetch reports');
-    const result: ApiResponse<Report[]> = await response.json();
-    return result.dado;
-  },
+  // ... (o método getAll continua igual)
 
-  create: async (data: { title: string; clientId: string; audioFileKey: string }): Promise<Report> => {
+  // Agora exigimos o userId e userName nos parâmetros!
+  create: async (data: { title: string; clientId: string; audioFileKey: string; userId: string; userName: string }): Promise<Report> => {
     const payload = {
       title: data.title,
       client: { id: data.clientId },
       transcript: '',
       audioFileKey: data.audioFileKey,
-      // Backend expects a UserDto if it doesn't resolve from context.
-      // Passing a mocked user object to satisfy typical dto requirements
-      user: { id: '00000000-0000-0000-0000-000000000000', name: 'Current User' } 
+      user: { id: data.userId, name: data.userName } // <-- Agora usamos o real!
     };
 
     const response = await fetch(`${API_BASE_URL}/reports`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(payload),
     });
 
@@ -40,7 +34,19 @@ export const ReportService = {
   delete: async (id: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/reports/${id}`, {
       method: 'DELETE',
+      credentials: 'include', 
+      headers: { 'Content-Type': 'application/json' }
     });
     if (!response.ok) throw new Error('Failed to delete report');
-  }
+  },
+
+  getAll: async (): Promise<Report[]> => {
+    const response = await fetch(`${API_BASE_URL}/reports`, {
+      credentials: 'include', 
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) throw new Error('Failed to fetch reports');
+    const result: ApiResponse<Report[]> = await response.json();
+    return result.dado;
+  },
 };

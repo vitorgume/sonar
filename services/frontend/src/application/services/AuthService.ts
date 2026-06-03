@@ -11,6 +11,7 @@ export const AuthService = {
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- Enviando e recebendo cookies
       body: JSON.stringify(credentials),
     });
     

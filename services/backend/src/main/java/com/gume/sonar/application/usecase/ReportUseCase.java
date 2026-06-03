@@ -22,10 +22,6 @@ public class ReportUseCase {
     private final AnaliseIAUseCase analiseIAUseCase;
 
     public Report create(Report report) {
-        if (report.getId() == null) {
-            report.setId(UUID.randomUUID());
-        }
-        
         // 1. Send URL to AssemblyAI
         UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(report.getTranscript()); // Assuming transcript field temporarily holds the audio URL based on rules
         

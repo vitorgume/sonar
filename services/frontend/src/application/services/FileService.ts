@@ -10,6 +10,7 @@ export const FileService = {
     const response = await fetch(`${API_BASE_URL}/files/presigned-url`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- Adicionado apenas aqui (vai para o backend)
       body: JSON.stringify({ fileName, contentType }),
     });
     if (!response.ok) throw new Error('Failed to get pre-signed URL');
@@ -23,6 +24,7 @@ export const FileService = {
       headers: {
         'Content-Type': file.type,
       },
+      // ATENÇÃO: Nunca envie credentials: 'include' para o S3/AWS!
       body: file,
     });
     if (!response.ok) throw new Error('Failed to upload file to S3');

@@ -2,11 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { type Report } from '../../domain/models/Report';
 import { ReportService } from '../services/ReportService';
 import { FileService } from '../services/FileService';
+import { useAuthContext } from '../../presentation/context/AuthContext';
 
 export const useReports = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuthContext();
 
   const fetchReports = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
@@ -42,7 +45,7 @@ export const useReports = () => {
       await FileService.uploadToS3(uploadUrl, audioFile);
 
       // 3. Create Report with fileKey
-      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey });
+      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey, userId: user.userId, userName: user.name});
       
       setReports((prev) => [...prev, newReport]);
       return newReport;

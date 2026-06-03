@@ -8,14 +8,18 @@ interface ApiResponse<T> {
 
 export const PromptService = {
   getAll: async (): Promise<Prompt[]> => {
-    const response = await fetch(`${API_BASE_URL}/prompts`);
+    const response = await fetch(`${API_BASE_URL}/prompts`, {
+      credentials: 'include' // <-- Adicionado
+    });
     if (!response.ok) throw new Error('Failed to fetch prompts');
     const result: ApiResponse<Prompt[]> = await response.json();
     return result.dado;
   },
 
   getById: async (id: string): Promise<Prompt | undefined> => {
-    const response = await fetch(`${API_BASE_URL}/prompts/${id}`);
+    const response = await fetch(`${API_BASE_URL}/prompts/${id}`, {
+      credentials: 'include' // <-- Adicionado
+    });
     if (!response.ok) throw new Error('Failed to fetch prompt');
     const result: ApiResponse<Prompt> = await response.json();
     return result.dado;
@@ -25,6 +29,7 @@ export const PromptService = {
     const response = await fetch(`${API_BASE_URL}/prompts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- Adicionado
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to create prompt');
@@ -36,6 +41,7 @@ export const PromptService = {
     const response = await fetch(`${API_BASE_URL}/prompts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // <-- Adicionado
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update prompt');
