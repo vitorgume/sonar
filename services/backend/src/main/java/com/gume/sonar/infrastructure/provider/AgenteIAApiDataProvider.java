@@ -25,7 +25,9 @@ public class AgenteIAApiDataProvider implements AnaliseIAGateway {
     @Value("${openai.api.key:default_api_key}")
     private String apiKey;
 
-    private static final String API_URL = "https://api.openai.com/v1/chat/completions";
+    @Value("${openai.api.url}")
+    private String API_URL;
+    
     private static final String MODELO_CHAT = "gpt-4o";
 
     @Override
