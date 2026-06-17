@@ -10,11 +10,11 @@ export const ReportService = {
   // ... (o método getAll continua igual)
 
   // Agora exigimos o userId e userName nos parâmetros!
-  create: async (data: { title: string; clientId: string; audioFileKey: string; userId: string; userName: string }): Promise<Report> => {
+  create: async (data: { title: string; clientId: string; audioFileKey: string; audioUrl: string; userId: string; userName: string }): Promise<Report> => {
     const payload = {
       title: data.title,
       client: { id: data.clientId },
-      transcript: '',
+      transcript: data.audioUrl,
       audioFileKey: data.audioFileKey,
       user: { id: data.userId, name: data.userName } // <-- Agora usamos o real!
     };

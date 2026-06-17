@@ -45,7 +45,8 @@ export const useReports = () => {
       await FileService.uploadToS3(uploadUrl, audioFile);
 
       // 3. Create Report with fileKey
-      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey, userId: user.userId, userName: user.name});
+      const audioUrl = FileService.getFileUrlFromUploadUrl(uploadUrl);
+      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey, audioUrl, userId: user.userId, userName: user.name });
       
       setReports((prev) => [...prev, newReport]);
       return newReport;
