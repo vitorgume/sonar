@@ -23,9 +23,12 @@ public class S3FileDataProvider implements FileGateway {
     @Value("${spring.cloud.aws.region.static}")
     private String region;
 
-    // Injetamos o endpoint, mas deixamos null como padrão para produção
     @Value("${aws.s3.endpoint:#{null}}")
     private String endpointOverride;
+
+    // 1. Injetamos o profile ativo. Deixamos "prod" como fallback (padrão) caso não encontre
+    @Value("${spring.profiles.active:prod}")
+    private String activeProfile;
 
     @Override
     public String generateUploadUrl(String fileKey, String contentType) {
@@ -34,8 +37,8 @@ public class S3FileDataProvider implements FileGateway {
                 .region(Region.of(region))
                 .credentialsProvider(DefaultCredentialsProvider.create());
 
-        // Se tivermos um endpoint configurado (LocalStack), aplicamos o override e o Path Style
-        if (endpointOverride != null && !endpointOverride.isBlank()) {
+        // 2. Agora verificamos explicitamente se o profile é "dev" antes de aplicar o override
+        if ("dev".equalsIgnoreCase(activeProfile) && endpointOverride != null && !endpointOverride.isBlank()) {
             presignerBuilder.endpointOverride(URI.create(endpointOverride))
                     .serviceConfiguration(S3Configuration.builder()
                             .pathStyleAccessEnabled(true)
