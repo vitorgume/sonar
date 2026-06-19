@@ -1,5 +1,6 @@
 package com.gume.sonar.application.usecase;
 
+import com.gume.sonar.application.gateway.FileGateway;
 import com.gume.sonar.application.gateway.ReportGateway;
 import com.gume.sonar.domain.Report;
 import com.gume.sonar.domain.Transcricao;
@@ -20,17 +21,19 @@ public class ReportUseCase {
     private final TranscricaoApiUseCase transcricaoApiUseCase;
     private final TranscricaoUseCase transcricaoUseCase;
     private final AnaliseIAUseCase analiseIAUseCase;
+    private final FileGateway fileGateway;
 
     public Report create(Report report) {
-        // 1. Send URL to AssemblyAI
-        UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(report.getTranscript()); // Assuming transcript field temporarily holds the audio URL based on rules
+    
+        String urlSeguraParaDownload = fileGateway.generateDownloadUrl(report.getAudioFileKey());
+
+        UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(urlSeguraParaDownload);
         
         // 2. Save Transcricao domain
         Transcricao transcricao = Transcricao.builder()
                 .id(transcriptionId)
-                .urlAudio(report.getTranscript())
+                .urlAudio(urlSeguraParaDownload)
                 .build();
-        
         
         // 3. Save Report as PROCESSING
         report.setStatus(ReportStatus.PROCESSING);

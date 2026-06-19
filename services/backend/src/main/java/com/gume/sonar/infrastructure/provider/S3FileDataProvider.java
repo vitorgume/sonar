@@ -7,8 +7,10 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.net.URI;
@@ -65,6 +67,32 @@ public class S3FileDataProvider implements FileGateway {
             // Log do erro real para ajudar no debug
             System.err.println("Erro ao gerar Pre-Signed URL do S3: " + e.getMessage());
             return "https://mock-s3-bucket.s3.amazonaws.com/" + fileKey + "?presigned=mock";
+        }
+    }
+
+    @Override
+    public String generateDownloadUrl(String fileKey) {
+        try (S3Presigner presigner = S3Presigner.builder()
+                .region(Region.of(region))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .build()) {
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .build();
+
+            // Gera uma URL que se autodestrói em 2 horas
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofHours(2)) 
+                    .getObjectRequest(getObjectRequest)
+                    .build();
+
+            return presigner.presignGetObject(presignRequest).url().toString();
+            
+        } catch (Exception e) {
+            System.err.println("Erro ao gerar Download URL: " + e.getMessage());
+            throw new RuntimeException("Falha ao gerar link de download do áudio", e);
         }
     }
 }
