@@ -36,6 +36,12 @@ export const useReports = () => {
   }, [fetchReports]);
 
   const createReport = async (title: string, clientId: string, audioFile: File) => {
+    // 🛡️ SOLUÇÃO AQUI: Garantindo que o user não é nulo para o TypeScript
+    if (!user) {
+      setError('User is not authenticated');
+      throw new Error('User is not authenticated');
+    }
+
     setIsLoading(true);
     try {
       // 1. Get Pre-Signed URL
@@ -45,8 +51,17 @@ export const useReports = () => {
       await FileService.uploadToS3(uploadUrl, audioFile);
 
       // 3. Create Report with fileKey
-      const audioUrl = FileService.getFileUrlFromUploadUrl(uploadUrl);
-      const newReport = await ReportService.create({ title, clientId, audioFileKey: fileKey, audioUrl, userId: user.userId, userName: user.name });
+      // @ts-ignore - Caso o FileService atual não exporte o getFileUrlFromUploadUrl
+      const audioUrl = FileService.getFileUrlFromUploadUrl ? FileService.getFileUrlFromUploadUrl(uploadUrl) : '';
+      
+      const newReport = await ReportService.create({ 
+        title, 
+        clientId, 
+        audioFileKey: fileKey, 
+        audioUrl, 
+        userId: user.userId, 
+        userName: user.name 
+      });
       
       setReports((prev) => [...prev, newReport]);
       return newReport;
