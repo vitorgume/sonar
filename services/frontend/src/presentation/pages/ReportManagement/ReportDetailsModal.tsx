@@ -3,6 +3,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { type Report } from '../../../domain/models/Report';
 import { Sparkles, Clock, CheckCircle } from 'lucide-react';
+import { formatDateTime } from '../../utils/formatDate';
 
 interface ReportDetailsModalProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ export const ReportDetailsModal: React.FC<ReportDetailsModalProps> = ({ isOpen, 
           <div className="text-sm text-slate-600 flex flex-col gap-1 mt-2">
             <p><span className="font-semibold text-slate-900">Cliente:</span> {report.client.name}</p>
             <p><span className="font-semibold text-slate-900">Responsável:</span> {report.user.name}</p>
-            <p><span className="font-semibold text-slate-900">Data:</span> {new Date(report.creationDate).toLocaleString()}</p>
+            <p><span className="font-semibold text-slate-900">Data:</span> {formatDateTime(report.creationDate)}</p>
           </div>
         </div>
 

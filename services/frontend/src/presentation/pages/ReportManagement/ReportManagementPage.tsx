@@ -6,6 +6,7 @@ import { Table, Thead, Tbody, Tr, Th, Td } from '../../components/ui/Table';
 import { Plus, Trash2, Eye, FileText, Loader2 } from 'lucide-react';
 import { ReportFormModal } from './ReportFormModal';
 import { ReportDetailsModal } from './ReportDetailsModal';
+import { formatDate } from '../../utils/formatDate';
 
 export const ReportManagementPage: React.FC = () => {
   const { reports, isLoading, createReport, deleteReport } = useReports();
@@ -69,7 +70,7 @@ export const ReportManagementPage: React.FC = () => {
                     </div>
                   </Td>
                   <Td>{report.client.name}</Td>
-                  <Td>{new Date(report.creationDate).toLocaleDateString()}</Td>
+                  <Td>{formatDate(report.creationDate)}</Td>
                   <Td>
                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                       report.status === 'COMPLETED' 

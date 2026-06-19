@@ -12,8 +12,9 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 w-full max-w-md flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
+      <div className="flex min-h-full items-start justify-center py-4 sm:items-center">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 w-full max-w-md max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-4 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-900">{title}</h2>
           <button
@@ -26,6 +27,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         <div className="p-4 flex-1 overflow-y-auto">
           {children}
         </div>
+      </div>
       </div>
     </div>
   );
