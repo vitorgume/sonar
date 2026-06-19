@@ -1,5 +1,6 @@
 package com.gume.sonar.infrastructure.repository.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,6 +32,7 @@ public class PromptEntity {
     
     private String title;
     
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
     
     @ManyToOne
