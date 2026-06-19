@@ -32,7 +32,7 @@ public class ReportUseCase {
         // 2. Save Transcricao domain
         Transcricao transcricao = Transcricao.builder()
                 .id(transcriptionId)
-                .urlAudio(urlSeguraParaDownload)
+                .urlAudio(report.getAudioFileKey())
                 .build();
         
         // 3. Save Report as PROCESSING
