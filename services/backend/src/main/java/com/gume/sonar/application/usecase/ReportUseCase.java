@@ -2,14 +2,17 @@ package com.gume.sonar.application.usecase;
 
 import com.gume.sonar.application.gateway.FileGateway;
 import com.gume.sonar.application.gateway.ReportGateway;
+import com.gume.sonar.domain.Client;
 import com.gume.sonar.domain.Report;
 import com.gume.sonar.domain.Transcricao;
+import com.gume.sonar.domain.User;
 import com.gume.sonar.domain.enums.ReportStatus;
 import com.gume.sonar.domain.exception.ReportNotFoundException;
 import com.gume.sonar.infrastructure.provider.dto.BuscaTranscricaoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,12 +21,23 @@ import java.util.UUID;
 public class ReportUseCase {
 
     private final ReportGateway reportGateway;
+    private final ClientUseCase clientUseCase;
     private final TranscricaoApiUseCase transcricaoApiUseCase;
     private final TranscricaoUseCase transcricaoUseCase;
     private final AnaliseIAUseCase analiseIAUseCase;
     private final FileGateway fileGateway;
 
-    public Report create(Report report) {
+    public Report create(UUID userId, Report report) {
+
+        report.setUser(User.builder().id(userId).build());
+        if (report.getCreationDate() == null) {
+            report.setCreationDate(LocalDateTime.now());
+        }
+
+        if (report.getClient() != null && report.getClient().getId() != null) {
+            Client client = clientUseCase.findById(userId, report.getClient().getId());
+            report.setClient(client);
+        }
     
         String urlSeguraParaDownload = fileGateway.generateDownloadUrl(report.getAudioFileKey());
 
@@ -56,7 +70,7 @@ public class ReportUseCase {
         BuscaTranscricaoResponseDto transcriptionDto = transcricaoApiUseCase.buscarTranscricaoCompleta(transcriptionId);
         
         // 3. Update Report to COMPLETED with text
-        Report report = findById(transcricao.getReport().getId());
+        Report report = findByIdInternal(transcricao.getReport().getId());
         report.setTranscript(transcriptionDto.getText());
 
         // 4. Call AnaliseIA to analyze the text
@@ -68,29 +82,36 @@ public class ReportUseCase {
         reportGateway.save(report);
     }
 
-    public Report findById(UUID id) {
+    public Report findByIdInternal(UUID id) {
         return reportGateway.findById(id)
                 .orElseThrow(() -> new ReportNotFoundException(id));
     }
 
-    public List<Report> findAll() {
-        return reportGateway.findAll();
+    public Report findById(UUID userId, UUID id) {
+        return reportGateway.findById(userId, id)
+                .orElseThrow(() -> new ReportNotFoundException(id));
     }
 
-    public Report update(UUID id, Report report) {
-        Report existingReport = findById(id);
+    public List<Report> findAll(UUID userId) {
+        return reportGateway.findAll(userId);
+    }
+
+    public Report update(UUID userId, UUID id, Report report) {
+        Report existingReport = findById(userId, id);
         
         existingReport.setTitle(report.getTitle());
-        existingReport.setUser(report.getUser());
-        existingReport.setClient(report.getClient());
+        if (report.getClient() != null && report.getClient().getId() != null) {
+            Client client = clientUseCase.findById(userId, report.getClient().getId());
+            existingReport.setClient(client);
+        }
         existingReport.setAnalysis(report.getAnalysis());
         existingReport.setTranscript(report.getTranscript());
         
         return reportGateway.save(existingReport);
     }
 
-    public void delete(UUID id) {
-        Report existingReport = findById(id);
-        reportGateway.deleteById(existingReport.getId());
+    public void delete(UUID userId, UUID id) {
+        Report existingReport = findById(userId, id);
+        reportGateway.deleteById(userId, existingReport.getId());
     }
 }

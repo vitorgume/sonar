@@ -1,6 +1,7 @@
 package com.gume.sonar.application.usecase;
 
 import com.gume.sonar.application.gateway.JwtGateway;
+import com.gume.sonar.application.gateway.PasswordGateway;
 import com.gume.sonar.domain.LoginResponse;
 import com.gume.sonar.domain.User;
 import com.gume.sonar.domain.exception.InvalidCredentialsException;
@@ -13,6 +14,7 @@ public class LoginUseCase {
 
     private final UserUseCase userUseCase;
     private final JwtGateway jwtGateway;
+    private final PasswordGateway passwordGateway;
 
     public LoginResponse execute(String email, String password) {
         User user;
@@ -22,7 +24,7 @@ public class LoginUseCase {
             throw new InvalidCredentialsException();
         }
 
-        if (!user.getPassword().equals(password)) {
+        if (user.getPassword() == null || !passwordGateway.matches(password, user.getPassword())) {
             throw new InvalidCredentialsException();
         }
 

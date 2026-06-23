@@ -14,7 +14,7 @@ public class JwtDataProvider implements JwtGateway {
 
     @Override
     public String generateToken(User user) {
-        // Generating the token using the user's email as the subject/username
-        return jwtUtil.generateToken(user.getEmail());
+        String userId = user.getId() == null ? null : user.getId().toString();
+        return jwtUtil.generateToken(user.getEmail(), userId);
     }
 }

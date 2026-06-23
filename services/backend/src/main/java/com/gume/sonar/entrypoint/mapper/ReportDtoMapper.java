@@ -31,7 +31,7 @@ public class ReportDtoMapper {
         return Report.builder()
                 .id(dto.getId())
                 .title(dto.getTitle())
-                .user(UserDtoMapper.toDomain(dto.getUser()))
+                .user(null)
                 .client(ClientDtoMapper.toDomain(dto.getClient()))
                 .analysis(dto.getAnalysis())
                 .transcript(dto.getTranscript())

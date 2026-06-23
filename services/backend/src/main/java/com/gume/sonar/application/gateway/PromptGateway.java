@@ -10,7 +10,7 @@ public interface PromptGateway {
     
     Prompt save(Prompt prompt);
     
-    Optional<Prompt> findById(UUID id);
+    Optional<Prompt> findById(UUID userId, UUID id);
     
-    List<Prompt> findAll();
+    List<Prompt> findAll(UUID userId);
 }

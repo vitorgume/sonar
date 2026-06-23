@@ -1,5 +1,6 @@
 package com.gume.sonar.application.usecase;
 
+import com.gume.sonar.application.gateway.PasswordGateway;
 import com.gume.sonar.application.gateway.UserGateway;
 import com.gume.sonar.domain.User;
 import com.gume.sonar.domain.exception.UserNotFoundException;
@@ -14,8 +15,12 @@ import java.util.UUID;
 public class UserUseCase {
 
     private final UserGateway userGateway;
+    private final PasswordGateway passwordGateway;
 
     public User create(User user) {
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2")) {
+            user.setPassword(passwordGateway.hash(user.getPassword()));
+        }
         return userGateway.save(user);
     }
 
@@ -38,7 +43,13 @@ public class UserUseCase {
         
         existingUser.setName(user.getName());
         existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(user.getPassword());
+        if (user.getPassword() != null) {
+            if (user.getPassword().startsWith("$2")) {
+                existingUser.setPassword(user.getPassword());
+            } else {
+                existingUser.setPassword(passwordGateway.hash(user.getPassword()));
+            }
+        }
         
         return userGateway.save(existingUser);
     }

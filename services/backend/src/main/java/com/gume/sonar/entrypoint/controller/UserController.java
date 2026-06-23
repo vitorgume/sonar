@@ -5,6 +5,7 @@ import com.gume.sonar.domain.User;
 import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
 import com.gume.sonar.entrypoint.controller.dto.UserDto;
 import com.gume.sonar.entrypoint.mapper.UserDtoMapper;
+import com.gume.sonar.entrypoint.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,7 +20,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserUseCase userUseCase;
+    private final CurrentUser currentUser;
 
     @PostMapping
     public ResponseEntity<ResponseDto<UserDto>> create(@RequestBody UserDto userDto) {
@@ -43,22 +44,32 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDto<UserDto>> findById(@PathVariable UUID id) {
-        User user = userUseCase.findById(id);
+        UUID currentUserId = currentUser.getId();
+        if (currentUserId == null || !currentUserId.equals(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userUseCase.findById(currentUserId);
         ResponseDto<UserDto> response = new ResponseDto<>(UserDtoMapper.toDto(user));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<ResponseDto<List<UserDto>>> findAll() {
-        List<User> users = userUseCase.findAll();
-        ResponseDto<List<UserDto>> response = new ResponseDto<>(users.stream()
-                .map(UserDtoMapper::toDto)
-                .collect(Collectors.toList()));
+        UUID currentUserId = currentUser.getId();
+        List<UserDto> users = currentUserId == null
+                ? List.of()
+                : List.of(UserDtoMapper.toDto(userUseCase.findById(currentUserId)));
+        ResponseDto<List<UserDto>> response = new ResponseDto<>(users);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ResponseDto<UserDto>> update(@PathVariable UUID id, @RequestBody UserDto userDto) {
+        UUID currentUserId = currentUser.getId();
+        if (currentUserId == null || !currentUserId.equals(id)) {
+            return ResponseEntity.notFound().build();
+        }
         User user = UserDtoMapper.toDomain(userDto);
         User updatedUser = userUseCase.update(id, user);
         ResponseDto<UserDto> response = new ResponseDto<>(UserDtoMapper.toDto(updatedUser));
@@ -67,6 +78,10 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        UUID currentUserId = currentUser.getId();
+        if (currentUserId == null || !currentUserId.equals(id)) {
+            return ResponseEntity.notFound().build();
+        }
         userUseCase.delete(id);
         return ResponseEntity.noContent().build();
     }

@@ -12,7 +12,9 @@ public interface ReportGateway {
     
     Optional<Report> findById(UUID id);
     
-    List<Report> findAll();
+    Optional<Report> findById(UUID userId, UUID id);
     
-    void deleteById(UUID id);
+    List<Report> findAll(UUID userId);
+    
+    void deleteById(UUID userId, UUID id);
 }

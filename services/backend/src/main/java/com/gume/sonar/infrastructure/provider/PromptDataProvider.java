@@ -27,14 +27,14 @@ public class PromptDataProvider implements PromptGateway {
     }
 
     @Override
-    public Optional<Prompt> findById(UUID id) {
-        return promptRepository.findById(id)
+    public Optional<Prompt> findById(UUID userId, UUID id) {
+        return promptRepository.findByIdAndUser_Id(id, userId)
                 .map(PromptEntityMapper::toDomain);
     }
 
     @Override
-    public List<Prompt> findAll() {
-        return promptRepository.findAll().stream()
+    public List<Prompt> findAll(UUID userId) {
+        return promptRepository.findAllByUser_Id(userId).stream()
                 .map(PromptEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }

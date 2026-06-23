@@ -3,6 +3,7 @@ package com.gume.sonar.infrastructure.security.jwt;
 import java.security.Key;
 import java.util.Date;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -30,10 +31,20 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
-        return Jwts.builder()
+        return generateToken(username, null);
+    }
+
+    public String generateToken(String username, String userId) {
+        var builder = Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME));
+
+        if (userId != null) {
+            builder.claim("uid", userId);
+        }
+
+        return builder
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -41,6 +52,12 @@ public class JwtUtil {
     public String extractUsername(String token) {
         return Jwts.parserBuilder().setSigningKey(getSignKey()).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public String extractUserId(String token) {
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build()
+                .parseClaimsJws(token).getBody();
+        return claims.get("uid", String.class);
     }
 
     public boolean isTokenValid(String token) {

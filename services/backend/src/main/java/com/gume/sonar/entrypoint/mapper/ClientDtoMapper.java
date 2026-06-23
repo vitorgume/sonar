@@ -26,7 +26,7 @@ public class ClientDtoMapper {
         return Client.builder()
                 .id(dto.getId())
                 .name(dto.getName())
-                .user(UserDtoMapper.toDomain(dto.getUser()))
+                .user(null)
                 .creationDate(dto.getCreationDate())
                 .build();
     }
