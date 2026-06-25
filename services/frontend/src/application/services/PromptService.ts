@@ -1,4 +1,4 @@
-import type { Prompt } from '../../domain/models/Prompt';
+import type { Prompt, PromptInput } from '../../domain/models/Prompt';
 import { API_BASE_URL } from '../config/env';
 
 interface ApiResponse<T> {
@@ -25,7 +25,7 @@ export const PromptService = {
     return result.dado;
   },
 
-  create: async (data: Omit<Prompt, 'id' | 'lastUpdate'>): Promise<Prompt> => {
+  create: async (data: PromptInput): Promise<Prompt> => {
     const response = await fetch(`${API_BASE_URL}/prompts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,7 +37,7 @@ export const PromptService = {
     return result.dado;
   },
 
-  update: async (id: string, data: Partial<Omit<Prompt, 'id' | 'lastUpdate'>>): Promise<Prompt> => {
+  update: async (id: string, data: PromptInput): Promise<Prompt> => {
     const response = await fetch(`${API_BASE_URL}/prompts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

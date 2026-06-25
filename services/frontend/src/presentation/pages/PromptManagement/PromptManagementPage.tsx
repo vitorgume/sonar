@@ -1,36 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Bot, Save, Plus, Loader2, Info } from 'lucide-react';
 import { usePrompts } from '../../../application/hooks/usePrompts';
+import { useClients } from '../../../application/hooks/useClients';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { useAuthContext } from '../../context/AuthContext';
 
 export const PromptManagementPage: React.FC = () => {
   const { prompts, loading, error, createPrompt, updatePrompt } = usePrompts();
-  const { user: authUser } = useAuthContext();
-  const [activePromptId, setActivePromptId] = useState<string | null>(null);
+  const { clients, isLoading: clientsLoading, error: clientsError } = useClients();
+  const [selectedClientId, setSelectedClientId] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const selectedPrompt = useMemo(
+    () => prompts.find((prompt) => prompt.client?.id === selectedClientId) ?? null,
+    [prompts, selectedClientId]
+  );
 
   useEffect(() => {
-    if (prompts.length > 0 && !activePromptId) {
-      // Load the first prompt by default for the CRU flow
-      const first = prompts[0];
-      setActivePromptId(first.id);
-      setTitle(first.title);
-      setContent(first.content);
-    } else if (prompts.length === 0) {
-      setActivePromptId(null);
+    if (!selectedClientId && clients.length > 0) {
+      setSelectedClientId(clients[0].id);
+      return;
+    }
+
+    if (clients.length === 0 && selectedClientId) {
+      setSelectedClientId('');
+    }
+  }, [clients, selectedClientId]);
+
+  useEffect(() => {
+    if (!selectedClientId) {
+      setTitle('');
+      setContent('');
+      return;
+    }
+
+    if (selectedPrompt) {
+      setTitle(selectedPrompt.title);
+      setContent(selectedPrompt.content);
+    } else {
       setTitle('');
       setContent('');
     }
-  }, [prompts, activePromptId]);
+  }, [selectedClientId, selectedPrompt]);
 
   const handleSave = async () => {
-    if (!authUser) {
-      setSaveMessage({ type: 'error', text: 'Usuário não autenticado.' });
+    if (!selectedClientId) {
+      setSaveMessage({ type: 'error', text: 'Selecione um cliente para configurar o prompt.' });
       return;
     }
 
@@ -42,27 +59,22 @@ export const PromptManagementPage: React.FC = () => {
     setIsSaving(true);
     setSaveMessage(null);
     try {
-      if (activePromptId) {
-        await updatePrompt(activePromptId, {
-          title,
-          content,
-          user: {
-            id: authUser.userId,
-            name: authUser.name,
-          },
+      const payload = {
+        title,
+        content,
+        client: {
+          id: selectedClientId,
+        },
+      };
+
+      if (selectedPrompt) {
+        await updatePrompt(selectedPrompt.id, {
+          ...payload,
         });
         setSaveMessage({ type: 'success', text: 'Prompt atualizado com sucesso!' });
       } else {
-        const newPrompt = await createPrompt({
-          title,
-          content,
-          user: {
-            id: authUser.userId,
-            name: authUser.name,
-          },
-        });
-        setActivePromptId(newPrompt.id);
-        setSaveMessage({ type: 'success', text: 'Prompt criado com sucesso!' });
+        await createPrompt(payload);
+        setSaveMessage({ type: 'success', text: 'Prompt criado com sucesso para o cliente selecionado!' });
       }
     } catch (err) {
       setSaveMessage({ type: 'error', text: 'Erro ao salvar o prompt.' });
@@ -71,7 +83,12 @@ export const PromptManagementPage: React.FC = () => {
     }
   };
 
-  if (loading && !activePromptId && prompts.length === 0) {
+  const isInitialLoading = loading || clientsLoading;
+  const combinedError = error || clientsError;
+  const hasClients = clients.length > 0;
+  const isSaveDisabled = isSaving || !selectedClientId || !title.trim() || !content.trim();
+
+  if (isInitialLoading && !hasClients && prompts.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -82,8 +99,6 @@ export const PromptManagementPage: React.FC = () => {
   return (
     <div className="flex flex-col flex-1 p-8 font-sans">
       <div className="max-w-4xl w-full mx-auto flex flex-col gap-6">
-        
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -91,22 +106,22 @@ export const PromptManagementPage: React.FC = () => {
               Configuração de Prompt IA
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Gerencie as instruções base que guiam as análises de call da Inteligência Artificial.
+              Gerencie as instruções da IA por cliente. Cada cliente possui seu próprio prompt.
             </p>
           </div>
-          <Button 
-            variant="primary" 
-            onClick={handleSave} 
-            disabled={isSaving}
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={isSaveDisabled}
           >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (activePromptId ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
-            {activePromptId ? 'Salvar Alterações' : 'Criar Prompt'}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : (selectedPrompt ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
+            {selectedPrompt ? 'Salvar Alterações' : 'Criar Prompt'}
           </Button>
         </div>
 
-        {error && (
+        {combinedError && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
+            {combinedError}
           </div>
         )}
 
@@ -117,10 +132,47 @@ export const PromptManagementPage: React.FC = () => {
           </div>
         )}
 
-        {/* Editor Card */}
+        {!hasClients && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+            Cadastre pelo menos um cliente antes de configurar prompts da IA.
+          </div>
+        )}
+
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-6">
-          <Input 
-            label="Título do Prompt" 
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-slate-900">
+              Cliente
+            </label>
+            <select
+              className="w-full rounded-lg border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100"
+              value={selectedClientId}
+              onChange={(e) => {
+                setSelectedClientId(e.target.value);
+                setSaveMessage(null);
+              }}
+              disabled={!hasClients || isSaving}
+            >
+              <option value="">Selecione um cliente</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-slate-500">
+              O prompt salvo aqui sera usado nas analises dos relatórios desse cliente.
+            </p>
+          </div>
+
+          {selectedClientId && !selectedPrompt && (
+            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg text-purple-800 text-sm flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              Nenhum prompt encontrado para este cliente. Preencha os campos abaixo para criar o primeiro.
+            </div>
+          )}
+
+          <Input
+            label="Título do Prompt"
             placeholder="Ex: Prompt Principal de Análise de Vendas"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -135,16 +187,22 @@ export const PromptManagementPage: React.FC = () => {
                 Markdown Enabled
               </span>
             </div>
-            
+
             <textarea
-              className="w-full h-96 p-4 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y"
+              className="w-full h-96 p-4 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y disabled:cursor-not-allowed disabled:bg-slate-100"
               placeholder="# Contexto&#10;Você é um assistente...&#10;&#10;# Regras&#10;- Regra 1"
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              disabled={!selectedClientId}
             />
           </div>
-        </div>
 
+          {selectedPrompt?.lastUpdate && (
+            <p className="text-xs text-slate-500">
+              Última atualização: {new Date(selectedPrompt.lastUpdate).toLocaleString()}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
