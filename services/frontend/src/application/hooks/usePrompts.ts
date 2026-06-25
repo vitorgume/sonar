@@ -1,24 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Prompt } from '../../domain/models/Prompt';
 import { PromptService } from '../services/PromptService';
+import { useAuthContext } from '../../presentation/context/AuthContext';
 
 export const usePrompts = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuthContext();
 
   const fetchPrompts = useCallback(async () => {
+    if (!user) {
+      setPrompts([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       const data = await PromptService.getAll();
-      setPrompts(data);
+      setPrompts(data.filter((prompt) => prompt.user?.id === user.userId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch prompts');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchPrompts();

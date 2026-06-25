@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Table, Thead, Tbody, Tr, Th, Td } from '../../components/ui/Table';
 import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import { ClientFormModal } from './ClientFormModal';
-import { type Client, type User } from '../../../domain/models/Client';
+import { type Client } from '../../../domain/models/Client';
 
 export const ClientManagementPage: React.FC = () => {
   const { clients, isLoading, createClient, updateClient, deleteClient } = useClients();

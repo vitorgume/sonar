@@ -1,40 +1,36 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type Client, type User } from '../../domain/models/Client';
+import { type Client } from '../../domain/models/Client';
 import { ClientService } from '../services/ClientService';
+import { useAuthContext } from '../../presentation/context/AuthContext';
 
 export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuthContext();
 
   const fetchClients = useCallback(async () => {
+    if (!user) {
+      setClients([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
       const data = await ClientService.getAll();
-      setClients(data);
+      setClients(data.filter((client) => client.user?.id === user.userId));
     } catch (err) {
       setError('Failed to fetch clients');
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  const fetchUsers = useCallback(async () => {
-    try {
-      const data = await ClientService.getUsers();
-      // Convert AuthContext User type to domain Client User type with required id field
-      setUsers(data as unknown as User[]);
-    } catch (err) {
-      console.error('Failed to fetch users', err);
-    }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchClients();
-    fetchUsers();
-  }, [fetchClients, fetchUsers]);
+  }, [fetchClients]);
 
   const createClient = async (data: Omit<Client, 'id' | 'creationDate'>) => {
     setIsLoading(true);

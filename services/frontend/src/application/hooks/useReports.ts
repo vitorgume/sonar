@@ -12,17 +12,25 @@ export const useReports = () => {
   const { user } = useAuthContext();
 
   const fetchReports = useCallback(async (showLoading = true) => {
+    if (!user) {
+      setReports([]);
+      if (showLoading) {
+        setIsLoading(false);
+      }
+      return;
+    }
+
     if (showLoading) setIsLoading(true);
     setError(null);
     try {
       const data = await ReportService.getAll();
-      setReports(data);
+      setReports(data.filter((report) => report.user?.id === user.userId));
     } catch (err) {
       setError('Failed to fetch reports');
     } finally {
       if (showLoading) setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchReports(true); // Initial fetch
@@ -36,6 +44,10 @@ export const useReports = () => {
   }, [fetchReports]);
 
   const createReport = async (title: string, clientId: string, audioFile: File) => {
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     setIsLoading(true);
     try {
       // 1. Get Pre-Signed URL

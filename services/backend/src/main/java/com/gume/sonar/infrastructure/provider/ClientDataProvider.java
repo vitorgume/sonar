@@ -33,8 +33,21 @@ public class ClientDataProvider implements ClientGateway {
     }
 
     @Override
+    public Optional<Client> findByIdAndUserId(UUID id, UUID userId) {
+        return clientRepository.findByIdAndUser_Id(id, userId)
+                .map(ClientEntityMapper::toDomain);
+    }
+
+    @Override
     public List<Client> findAll() {
         return clientRepository.findAll().stream()
+                .map(ClientEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Client> findAllByUserId(UUID userId) {
+        return clientRepository.findAllByUser_Id(userId).stream()
                 .map(ClientEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }

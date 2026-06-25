@@ -36,8 +36,21 @@ public class ReportDataProvider implements ReportGateway {
     }
 
     @Override
+    public Optional<Report> findByIdAndUserId(UUID id, UUID userId) {
+        return reportRepository.findByIdAndUser_Id(id, userId)
+                .map(ReportEntityMapper::toDomain);
+    }
+
+    @Override
     public List<Report> findAll() {
         return reportRepository.findAll().stream()
+                .map(ReportEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Report> findAllByUserId(UUID userId) {
+        return reportRepository.findAllByUser_Id(userId).stream()
                 .map(ReportEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }

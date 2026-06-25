@@ -2,12 +2,15 @@
 
 import com.gume.sonar.application.usecase.ReportUseCase;
 import com.gume.sonar.domain.Report;
+import com.gume.sonar.domain.User;
 import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
 import com.gume.sonar.entrypoint.controller.dto.ReportDto;
 import com.gume.sonar.entrypoint.controller.dto.TranscriptionWebhookDto;
+import com.gume.sonar.entrypoint.controller.support.AuthenticatedUserResolver;
 import com.gume.sonar.entrypoint.mapper.ReportDtoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,11 +31,13 @@ import java.util.stream.Collectors;
 public class ReportController {
 
     private final ReportUseCase reportUseCase;
+    private final AuthenticatedUserResolver authenticatedUserResolver;
 
     @PostMapping
-    public ResponseEntity<ResponseDto<ReportDto>> create(@RequestBody ReportDto reportDto) {
+    public ResponseEntity<ResponseDto<ReportDto>> create(@RequestBody ReportDto reportDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Report report = ReportDtoMapper.toDomain(reportDto);
-        Report createdReport = reportUseCase.create(report);
+        Report createdReport = reportUseCase.create(report, authenticatedUser);
         ResponseDto<ReportDto> response = new ResponseDto<>(ReportDtoMapper.toDto(createdReport));
         return ResponseEntity.created(
             UriComponentsBuilder.newInstance()
@@ -43,15 +48,17 @@ public class ReportController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<ReportDto>> findById(@PathVariable UUID id) {
-        Report report = reportUseCase.findById(id);
+    public ResponseEntity<ResponseDto<ReportDto>> findById(@PathVariable UUID id, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        Report report = reportUseCase.findByIdAndUserId(id, authenticatedUser.getId());
         ResponseDto<ReportDto> response = new ResponseDto<>(ReportDtoMapper.toDto(report));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<ResponseDto<List<ReportDto>>> findAll() {
-        List<Report> reports = reportUseCase.findAll();
+    public ResponseEntity<ResponseDto<List<ReportDto>>> findAll(Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        List<Report> reports = reportUseCase.findAllByUserId(authenticatedUser.getId());
         ResponseDto<List<ReportDto>> response = new ResponseDto<>(reports.stream()
                 .map(ReportDtoMapper::toDto)
                 .collect(Collectors.toList()));
@@ -59,16 +66,18 @@ public class ReportController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto<ReportDto>> update(@PathVariable UUID id, @RequestBody ReportDto reportDto) {
+    public ResponseEntity<ResponseDto<ReportDto>> update(@PathVariable UUID id, @RequestBody ReportDto reportDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Report report = ReportDtoMapper.toDomain(reportDto);
-        Report updatedReport = reportUseCase.update(id, report);
+        Report updatedReport = reportUseCase.update(id, report, authenticatedUser);
         ResponseDto<ReportDto> response = new ResponseDto<>(ReportDtoMapper.toDto(updatedReport));
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        reportUseCase.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        reportUseCase.delete(id, authenticatedUser.getId());
         return ResponseEntity.noContent().build();
     }
 

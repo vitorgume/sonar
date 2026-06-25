@@ -3,10 +3,11 @@ import { Bot, Save, Plus, Loader2, Info } from 'lucide-react';
 import { usePrompts } from '../../../application/hooks/usePrompts';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { useAuthContext } from '../../context/AuthContext';
 
 export const PromptManagementPage: React.FC = () => {
   const { prompts, loading, error, createPrompt, updatePrompt } = usePrompts();
-  
+  const { user: authUser } = useAuthContext();
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -20,10 +21,19 @@ export const PromptManagementPage: React.FC = () => {
       setActivePromptId(first.id);
       setTitle(first.title);
       setContent(first.content);
+    } else if (prompts.length === 0) {
+      setActivePromptId(null);
+      setTitle('');
+      setContent('');
     }
   }, [prompts, activePromptId]);
 
   const handleSave = async () => {
+    if (!authUser) {
+      setSaveMessage({ type: 'error', text: 'Usuário não autenticado.' });
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       setSaveMessage({ type: 'error', text: 'Título e conteúdo são obrigatórios.' });
       return;
@@ -33,12 +43,24 @@ export const PromptManagementPage: React.FC = () => {
     setSaveMessage(null);
     try {
       if (activePromptId) {
-        // Update existing
-        await updatePrompt(activePromptId, { title, content });
+        await updatePrompt(activePromptId, {
+          title,
+          content,
+          user: {
+            id: authUser.userId,
+            name: authUser.name,
+          },
+        });
         setSaveMessage({ type: 'success', text: 'Prompt atualizado com sucesso!' });
       } else {
-        // Create new
-        const newPrompt = await createPrompt({ title, content });
+        const newPrompt = await createPrompt({
+          title,
+          content,
+          user: {
+            id: authUser.userId,
+            name: authUser.name,
+          },
+        });
         setActivePromptId(newPrompt.id);
         setSaveMessage({ type: 'success', text: 'Prompt criado com sucesso!' });
       }

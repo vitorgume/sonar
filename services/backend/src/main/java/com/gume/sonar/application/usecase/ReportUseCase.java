@@ -1,14 +1,17 @@
 package com.gume.sonar.application.usecase;
 
 import com.gume.sonar.application.gateway.ReportGateway;
+import com.gume.sonar.domain.Client;
 import com.gume.sonar.domain.Report;
 import com.gume.sonar.domain.Transcricao;
+import com.gume.sonar.domain.User;
 import com.gume.sonar.domain.enums.ReportStatus;
 import com.gume.sonar.domain.exception.ReportNotFoundException;
 import com.gume.sonar.infrastructure.provider.dto.BuscaTranscricaoResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +23,17 @@ public class ReportUseCase {
     private final TranscricaoApiUseCase transcricaoApiUseCase;
     private final TranscricaoUseCase transcricaoUseCase;
     private final AnaliseIAUseCase analiseIAUseCase;
+    private final ClientUseCase clientUseCase;
 
-    public Report create(Report report) {
+    public Report create(Report report, User authenticatedUser) {
+        Client client = clientUseCase.findByIdAndUserId(report.getClient().getId(), authenticatedUser.getId());
+
+        report.setUser(authenticatedUser);
+        report.setClient(client);
+        if (report.getCreationDate() == null) {
+            report.setCreationDate(LocalDateTime.now());
+        }
+
         // 1. Send URL to AssemblyAI
         UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(report.getTranscript()); // Assuming transcript field temporarily holds the audio URL based on rules
         
@@ -74,20 +86,30 @@ public class ReportUseCase {
         return reportGateway.findAll();
     }
 
-    public Report update(UUID id, Report report) {
-        Report existingReport = findById(id);
+    public Report findByIdAndUserId(UUID id, UUID userId) {
+        return reportGateway.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ReportNotFoundException(id));
+    }
+
+    public List<Report> findAllByUserId(UUID userId) {
+        return reportGateway.findAllByUserId(userId);
+    }
+
+    public Report update(UUID id, Report report, User authenticatedUser) {
+        Report existingReport = findByIdAndUserId(id, authenticatedUser.getId());
+        Client client = clientUseCase.findByIdAndUserId(report.getClient().getId(), authenticatedUser.getId());
         
         existingReport.setTitle(report.getTitle());
-        existingReport.setUser(report.getUser());
-        existingReport.setClient(report.getClient());
+        existingReport.setUser(authenticatedUser);
+        existingReport.setClient(client);
         existingReport.setAnalysis(report.getAnalysis());
         existingReport.setTranscript(report.getTranscript());
         
         return reportGateway.save(existingReport);
     }
 
-    public void delete(UUID id) {
-        Report existingReport = findById(id);
+    public void delete(UUID id, UUID userId) {
+        Report existingReport = findByIdAndUserId(id, userId);
         reportGateway.deleteById(existingReport.getId());
     }
 }
