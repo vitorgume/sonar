@@ -10,7 +10,7 @@ public class AnaliseIAUseCase {
 
     private final AnaliseIAGateway analiseIAGateway;
 
-    public String analisarTranscricao(String transcricao) {
-        return analiseIAGateway.analisarTranscricao(transcricao);
+    public String analisarTranscricao(String prompt, String transcricao) {
+        return analiseIAGateway.analisarTranscricao(prompt, transcricao);
     }
 }

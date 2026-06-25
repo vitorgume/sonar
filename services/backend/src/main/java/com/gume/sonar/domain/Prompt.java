@@ -18,6 +18,6 @@ public class Prompt {
     private UUID id;
     private String title;
     private String content;
-    private User user;
+    private Client client;
     private LocalDateTime lastUpdate;
 }

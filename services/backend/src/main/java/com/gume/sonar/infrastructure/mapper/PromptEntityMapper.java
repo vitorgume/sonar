@@ -14,7 +14,7 @@ public class PromptEntityMapper {
                 .id(domain.getId())
                 .title(domain.getTitle())
                 .content(domain.getContent())
-                .user(UserEntityMapper.toEntity(domain.getUser()))
+                .client(ClientEntityMapper.toEntity(domain.getClient()))
                 .lastUpdate(domain.getLastUpdate())
                 .build();
     }
@@ -28,7 +28,7 @@ public class PromptEntityMapper {
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .content(entity.getContent())
-                .user(UserEntityMapper.toDomain(entity.getUser()))
+                .client(ClientEntityMapper.toDomain(entity.getClient()))
                 .lastUpdate(entity.getLastUpdate())
                 .build();
     }

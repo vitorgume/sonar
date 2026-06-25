@@ -10,7 +10,9 @@ import java.util.UUID;
 
 @Repository
 public interface PromptRepository extends JpaRepository<PromptEntity, UUID> {
-    Optional<PromptEntity> findByIdAndUser_Id(UUID id, UUID userId);
+    Optional<PromptEntity> findByIdAndClient_User_Id(UUID id, UUID userId);
 
-    List<PromptEntity> findAllByUser_Id(UUID userId);
+    Optional<PromptEntity> findByClient_IdAndClient_User_Id(UUID clientId, UUID userId);
+
+    List<PromptEntity> findAllByClient_User_Id(UUID userId);
 }

@@ -11,4 +11,8 @@ public class PromptNotFoundException extends RuntimeException {
     public PromptNotFoundException(UUID id) {
         super("Prompt not found with ID: " + id);
     }
+
+    public PromptNotFoundException(String message) {
+        super(message);
+    }
 }

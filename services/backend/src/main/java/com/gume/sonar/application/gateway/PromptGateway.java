@@ -13,6 +13,8 @@ public interface PromptGateway {
     Optional<Prompt> findById(UUID id);
 
     Optional<Prompt> findByIdAndUserId(UUID id, UUID userId);
+
+    Optional<Prompt> findByClientIdAndUserId(UUID clientId, UUID userId);
     
     List<Prompt> findAll();
 

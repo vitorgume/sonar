@@ -18,6 +18,6 @@ public class PromptDto {
     private UUID id;
     private String title;
     private String content;
-    private UserDto user;
+    private ClientDto client;
     private LocalDateTime lastUpdate;
 }

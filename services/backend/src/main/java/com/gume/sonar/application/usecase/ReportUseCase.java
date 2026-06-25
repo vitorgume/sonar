@@ -24,6 +24,7 @@ public class ReportUseCase {
     private final TranscricaoUseCase transcricaoUseCase;
     private final AnaliseIAUseCase analiseIAUseCase;
     private final ClientUseCase clientUseCase;
+    private final PromptUseCase promptUseCase;
 
     public Report create(Report report, User authenticatedUser) {
         Client client = clientUseCase.findByIdAndUserId(report.getClient().getId(), authenticatedUser.getId());
@@ -69,7 +70,11 @@ public class ReportUseCase {
         report.setTranscript(transcriptionDto.getText());
 
         // 4. Call AnaliseIA to analyze the text
-        String analysis = analiseIAUseCase.analisarTranscricao(report.getTranscript());
+        String clientPrompt = promptUseCase.findByClientIdAndUserId(
+                report.getClient().getId(),
+                report.getUser().getId()
+        ).getContent();
+        String analysis = analiseIAUseCase.analisarTranscricao(clientPrompt, report.getTranscript());
         report.setAnalysis(analysis);
 
         report.setStatus(ReportStatus.COMPLETED);
