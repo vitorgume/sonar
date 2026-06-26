@@ -13,6 +13,6 @@ public class AuthenticatedUserResolver {
     private final UserUseCase userUseCase;
 
     public User resolve(Authentication authentication) {
-        return userUseCase.findByEmail(authentication.getName());
+        return userUseCase.findByEmail(authentication.getPrincipal().toString());
     }
 }
