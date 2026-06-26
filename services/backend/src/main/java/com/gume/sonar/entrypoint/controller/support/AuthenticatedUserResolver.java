@@ -5,6 +5,8 @@ import com.gume.sonar.domain.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +18,6 @@ public class AuthenticatedUserResolver {
     private final UserUseCase userUseCase;
 
     public User resolve(Authentication authentication) {
-        log.info("Resolvendo usuário: {}, {}", authentication.getName(), authentication.getPrincipal().toString());
-        return userUseCase.findByEmail(authentication.getPrincipal().toString());
+        return userUseCase.findById(UUID.fromString(authentication.getName()));
     }
 }
