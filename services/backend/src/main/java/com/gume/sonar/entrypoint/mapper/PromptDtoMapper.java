@@ -14,7 +14,7 @@ public class PromptDtoMapper {
                 .id(domain.getId())
                 .title(domain.getTitle())
                 .content(domain.getContent())
-                .user(UserDtoMapper.toDto(domain.getUser()))
+                .client(ClientDtoMapper.toDto(domain.getClient()))
                 .lastUpdate(domain.getLastUpdate())
                 .build();
     }
@@ -28,7 +28,7 @@ public class PromptDtoMapper {
                 .id(dto.getId())
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .user(null)
+                .client(ClientDtoMapper.toDomain(dto.getClient()))
                 .lastUpdate(dto.getLastUpdate())
                 .build();
     }

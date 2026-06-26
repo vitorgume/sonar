@@ -1,13 +1,15 @@
 package com.gume.sonar.entrypoint.controller;
 
 import com.gume.sonar.application.usecase.ClientUseCase;
+import com.gume.sonar.domain.User;
 import com.gume.sonar.domain.Client;
 import com.gume.sonar.entrypoint.controller.dto.ClientDto;
 import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
+import com.gume.sonar.entrypoint.controller.support.AuthenticatedUserResolver;
 import com.gume.sonar.entrypoint.mapper.ClientDtoMapper;
-import com.gume.sonar.entrypoint.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,13 +30,13 @@ import java.util.stream.Collectors;
 public class ClientController {
 
     private final ClientUseCase clientUseCase;
-    private final CurrentUser currentUser;
+    private final AuthenticatedUserResolver authenticatedUserResolver;
 
     @PostMapping
-    public ResponseEntity<ResponseDto<ClientDto>> create(@RequestBody ClientDto clientDto) {
-        UUID userId = currentUser.getId();
+    public ResponseEntity<ResponseDto<ClientDto>> create(@RequestBody ClientDto clientDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Client client = ClientDtoMapper.toDomain(clientDto);
-        Client createdClient = clientUseCase.create(userId, client);
+        Client createdClient = clientUseCase.create(client, authenticatedUser);
         ResponseDto<ClientDto> response = new ResponseDto<>(ClientDtoMapper.toDto(createdClient));
         return ResponseEntity.created(
             UriComponentsBuilder.newInstance()
@@ -45,17 +47,17 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<ClientDto>> findById(@PathVariable UUID id) {
-        UUID userId = currentUser.getId();
-        Client client = clientUseCase.findById(userId, id);
+    public ResponseEntity<ResponseDto<ClientDto>> findById(@PathVariable UUID id, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        Client client = clientUseCase.findByIdAndUserId(id, authenticatedUser.getId());
         ResponseDto<ClientDto> response = new ResponseDto<>(ClientDtoMapper.toDto(client));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<ResponseDto<List<ClientDto>>> findAll() {
-        UUID userId = currentUser.getId();
-        List<Client> clients = clientUseCase.findAll(userId);
+    public ResponseEntity<ResponseDto<List<ClientDto>>> findAll(Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        List<Client> clients = clientUseCase.findAllByUserId(authenticatedUser.getId());
         ResponseDto<List<ClientDto>> response = new ResponseDto<>(clients.stream()
                 .map(ClientDtoMapper::toDto)
                 .collect(Collectors.toList()));
@@ -63,18 +65,18 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto<ClientDto>> update(@PathVariable UUID id, @RequestBody ClientDto clientDto) {
-        UUID userId = currentUser.getId();
+    public ResponseEntity<ResponseDto<ClientDto>> update(@PathVariable UUID id, @RequestBody ClientDto clientDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Client client = ClientDtoMapper.toDomain(clientDto);
-        Client updatedClient = clientUseCase.update(userId, id, client);
+        Client updatedClient = clientUseCase.update(id, client, authenticatedUser);
         ResponseDto<ClientDto> response = new ResponseDto<>(ClientDtoMapper.toDto(updatedClient));
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        UUID userId = currentUser.getId();
-        clientUseCase.delete(userId, id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        clientUseCase.delete(id, authenticatedUser.getId());
         return ResponseEntity.noContent().build();
     }
 }

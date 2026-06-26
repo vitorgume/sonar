@@ -1,6 +1,5 @@
 package com.gume.sonar.application.usecase;
 
-import com.gume.sonar.application.gateway.FileGateway;
 import com.gume.sonar.application.gateway.ReportGateway;
 import com.gume.sonar.domain.Client;
 import com.gume.sonar.domain.Report;
@@ -21,33 +20,30 @@ import java.util.UUID;
 public class ReportUseCase {
 
     private final ReportGateway reportGateway;
-    private final ClientUseCase clientUseCase;
     private final TranscricaoApiUseCase transcricaoApiUseCase;
     private final TranscricaoUseCase transcricaoUseCase;
     private final AnaliseIAUseCase analiseIAUseCase;
-    private final FileGateway fileGateway;
+    private final ClientUseCase clientUseCase;
+    private final PromptUseCase promptUseCase;
 
-    public Report create(UUID userId, Report report) {
+    public Report create(Report report, User authenticatedUser) {
+        Client client = clientUseCase.findByIdAndUserId(report.getClient().getId(), authenticatedUser.getId());
 
-        report.setUser(User.builder().id(userId).build());
+        report.setUser(authenticatedUser);
+        report.setClient(client);
         if (report.getCreationDate() == null) {
             report.setCreationDate(LocalDateTime.now());
         }
 
-        if (report.getClient() != null && report.getClient().getId() != null) {
-            Client client = clientUseCase.findById(userId, report.getClient().getId());
-            report.setClient(client);
-        }
-    
-        String urlSeguraParaDownload = fileGateway.generateDownloadUrl(report.getAudioFileKey());
-
-        UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(urlSeguraParaDownload);
+        // 1. Send URL to AssemblyAI
+        UUID transcriptionId = transcricaoApiUseCase.enviarTranscricao(report.getTranscript()); // Assuming transcript field temporarily holds the audio URL based on rules
         
         // 2. Save Transcricao domain
         Transcricao transcricao = Transcricao.builder()
                 .id(transcriptionId)
-                .urlAudio(report.getAudioFileKey())
+                .urlAudio(report.getTranscript())
                 .build();
+        
         
         // 3. Save Report as PROCESSING
         report.setStatus(ReportStatus.PROCESSING);
@@ -70,11 +66,15 @@ public class ReportUseCase {
         BuscaTranscricaoResponseDto transcriptionDto = transcricaoApiUseCase.buscarTranscricaoCompleta(transcriptionId);
         
         // 3. Update Report to COMPLETED with text
-        Report report = findByIdInternal(transcricao.getReport().getId());
+        Report report = findById(transcricao.getReport().getId());
         report.setTranscript(transcriptionDto.getText());
 
         // 4. Call AnaliseIA to analyze the text
-        String analysis = analiseIAUseCase.analisarTranscricao(report.getTranscript());
+        String clientPrompt = promptUseCase.findByClientIdAndUserId(
+                report.getClient().getId(),
+                report.getUser().getId()
+        ).getContent();
+        String analysis = analiseIAUseCase.analisarTranscricao(clientPrompt, report.getTranscript());
         report.setAnalysis(analysis);
 
         report.setStatus(ReportStatus.COMPLETED);
@@ -82,36 +82,39 @@ public class ReportUseCase {
         reportGateway.save(report);
     }
 
-    public Report findByIdInternal(UUID id) {
+    public Report findById(UUID id) {
         return reportGateway.findById(id)
                 .orElseThrow(() -> new ReportNotFoundException(id));
     }
 
-    public Report findById(UUID userId, UUID id) {
-        return reportGateway.findById(userId, id)
+    public List<Report> findAll() {
+        return reportGateway.findAll();
+    }
+
+    public Report findByIdAndUserId(UUID id, UUID userId) {
+        return reportGateway.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ReportNotFoundException(id));
     }
 
-    public List<Report> findAll(UUID userId) {
-        return reportGateway.findAll(userId);
+    public List<Report> findAllByUserId(UUID userId) {
+        return reportGateway.findAllByUserId(userId);
     }
 
-    public Report update(UUID userId, UUID id, Report report) {
-        Report existingReport = findById(userId, id);
+    public Report update(UUID id, Report report, User authenticatedUser) {
+        Report existingReport = findByIdAndUserId(id, authenticatedUser.getId());
+        Client client = clientUseCase.findByIdAndUserId(report.getClient().getId(), authenticatedUser.getId());
         
         existingReport.setTitle(report.getTitle());
-        if (report.getClient() != null && report.getClient().getId() != null) {
-            Client client = clientUseCase.findById(userId, report.getClient().getId());
-            existingReport.setClient(client);
-        }
+        existingReport.setUser(authenticatedUser);
+        existingReport.setClient(client);
         existingReport.setAnalysis(report.getAnalysis());
         existingReport.setTranscript(report.getTranscript());
         
         return reportGateway.save(existingReport);
     }
 
-    public void delete(UUID userId, UUID id) {
-        Report existingReport = findById(userId, id);
-        reportGateway.deleteById(userId, existingReport.getId());
+    public void delete(UUID id, UUID userId) {
+        Report existingReport = findByIdAndUserId(id, userId);
+        reportGateway.deleteById(existingReport.getId());
     }
 }

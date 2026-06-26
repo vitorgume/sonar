@@ -8,8 +8,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PromptRepository extends JpaRepository<PromptEntity, UUID> {
+    Optional<PromptEntity> findByIdAndClient_User_Id(UUID id, UUID userId);
 
-    Optional<PromptEntity> findByIdAndUser_Id(UUID id, UUID userId);
+    Optional<PromptEntity> findByClient_IdAndClient_User_Id(UUID clientId, UUID userId);
 
-    List<PromptEntity> findAllByUser_Id(UUID userId);
+    List<PromptEntity> findAllByClient_User_Id(UUID userId);
 }

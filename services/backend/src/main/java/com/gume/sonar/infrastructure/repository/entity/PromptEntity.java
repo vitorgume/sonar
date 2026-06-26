@@ -6,7 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,9 +35,9 @@ public class PromptEntity {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
     
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @OneToOne
+    @JoinColumn(name = "client_id", unique = true)
+    private ClientEntity client;
     
     private LocalDateTime lastUpdate;
 }

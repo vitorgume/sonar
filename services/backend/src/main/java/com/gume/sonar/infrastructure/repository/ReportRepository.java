@@ -9,10 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.gume.sonar.infrastructure.repository.entity.ReportEntity;
 
 public interface ReportRepository extends JpaRepository<ReportEntity, UUID> {
-
     Optional<ReportEntity> findByIdAndUser_Id(UUID id, UUID userId);
 
     List<ReportEntity> findAllByUser_Id(UUID userId);
-
-    void deleteByIdAndUser_Id(UUID id, UUID userId);
 }

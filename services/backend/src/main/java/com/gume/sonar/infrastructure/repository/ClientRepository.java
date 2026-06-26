@@ -8,10 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ClientRepository extends JpaRepository<ClientEntity, UUID> {
-
     Optional<ClientEntity> findByIdAndUser_Id(UUID id, UUID userId);
 
     List<ClientEntity> findAllByUser_Id(UUID userId);
-
-    void deleteByIdAndUser_Id(UUID id, UUID userId);
 }

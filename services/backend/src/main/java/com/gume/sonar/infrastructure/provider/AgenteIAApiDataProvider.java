@@ -31,15 +31,20 @@ public class AgenteIAApiDataProvider implements AnaliseIAGateway {
     private static final String MODELO_CHAT = "gpt-4o";
 
     @Override
-    public String analisarTranscricao(String transcricao) {
-        OpenAiMessageDto message = OpenAiMessageDto.builder()
+    public String analisarTranscricao(String prompt, String transcricao) {
+        OpenAiMessageDto systemMessage = OpenAiMessageDto.builder()
+                .role("system")
+                .content(prompt)
+                .build();
+
+        OpenAiMessageDto userMessage = OpenAiMessageDto.builder()
                 .role("user")
-                .content("Analise a seguinte transcrição: " + transcricao)
+                .content("Analise a seguinte transcrição:\n\n" + transcricao)
                 .build();
 
         OpenAiRequestDto requestDto = OpenAiRequestDto.builder()
                 .model(MODELO_CHAT)
-                .messages(List.of(message))
+                .messages(List.of(systemMessage, userMessage))
                 .temperature(0.7)
                 .build();
 

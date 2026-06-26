@@ -2,12 +2,14 @@ package com.gume.sonar.entrypoint.controller;
 
 import com.gume.sonar.application.usecase.PromptUseCase;
 import com.gume.sonar.domain.Prompt;
+import com.gume.sonar.domain.User;
 import com.gume.sonar.entrypoint.controller.dto.PromptDto;
 import com.gume.sonar.entrypoint.controller.dto.ResponseDto;
+import com.gume.sonar.entrypoint.controller.support.AuthenticatedUserResolver;
 import com.gume.sonar.entrypoint.mapper.PromptDtoMapper;
-import com.gume.sonar.entrypoint.security.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +29,13 @@ import java.util.stream.Collectors;
 public class PromptController {
 
     private final PromptUseCase promptUseCase;
-    private final CurrentUser currentUser;
+    private final AuthenticatedUserResolver authenticatedUserResolver;
 
     @PostMapping
-    public ResponseEntity<ResponseDto<PromptDto>> create(@RequestBody PromptDto promptDto) {
-        UUID userId = currentUser.getId();
+    public ResponseEntity<ResponseDto<PromptDto>> create(@RequestBody PromptDto promptDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Prompt prompt = PromptDtoMapper.toDomain(promptDto);
-        Prompt createdPrompt = promptUseCase.create(userId, prompt);
+        Prompt createdPrompt = promptUseCase.create(prompt, authenticatedUser);
         ResponseDto<PromptDto> response = new ResponseDto<>(PromptDtoMapper.toDto(createdPrompt));
         return ResponseEntity.created(
             UriComponentsBuilder.newInstance()
@@ -44,17 +46,17 @@ public class PromptController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<PromptDto>> findById(@PathVariable UUID id) {
-        UUID userId = currentUser.getId();
-        Prompt prompt = promptUseCase.findById(userId, id);
+    public ResponseEntity<ResponseDto<PromptDto>> findById(@PathVariable UUID id, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        Prompt prompt = promptUseCase.findByIdAndUserId(id, authenticatedUser.getId());
         ResponseDto<PromptDto> response = new ResponseDto<>(PromptDtoMapper.toDto(prompt));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<ResponseDto<List<PromptDto>>> findAll() {
-        UUID userId = currentUser.getId();
-        List<Prompt> prompts = promptUseCase.findAll(userId);
+    public ResponseEntity<ResponseDto<List<PromptDto>>> findAll(Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
+        List<Prompt> prompts = promptUseCase.findAllByUserId(authenticatedUser.getId());
         ResponseDto<List<PromptDto>> response = new ResponseDto<>(
                 prompts == null ? List.of() : prompts.stream()
                         .map(PromptDtoMapper::toDto)
@@ -64,10 +66,10 @@ public class PromptController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ResponseDto<PromptDto>> update(@PathVariable UUID id, @RequestBody PromptDto promptDto) {
-        UUID userId = currentUser.getId();
+    public ResponseEntity<ResponseDto<PromptDto>> update(@PathVariable UUID id, @RequestBody PromptDto promptDto, Authentication authentication) {
+        User authenticatedUser = authenticatedUserResolver.resolve(authentication);
         Prompt prompt = PromptDtoMapper.toDomain(promptDto);
-        Prompt updatedPrompt = promptUseCase.update(userId, id, prompt);
+        Prompt updatedPrompt = promptUseCase.update(id, prompt, authenticatedUser);
         ResponseDto<PromptDto> response = new ResponseDto<>(PromptDtoMapper.toDto(updatedPrompt));
         return ResponseEntity.ok(response);
     }

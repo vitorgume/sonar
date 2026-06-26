@@ -10,9 +10,13 @@ public interface ClientGateway {
     
     Client save(Client client);
     
-    Optional<Client> findById(UUID userId, UUID id);
+    Optional<Client> findById(UUID id);
+
+    Optional<Client> findByIdAndUserId(UUID id, UUID userId);
     
-    List<Client> findAll(UUID userId);
+    List<Client> findAll();
+
+    List<Client> findAllByUserId(UUID userId);
     
-    void deleteById(UUID userId, UUID id);
+    void deleteById(UUID id);
 }

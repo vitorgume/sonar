@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type Prompt } from '../../domain/models/Prompt';
+import { type Prompt, type PromptInput } from '../../domain/models/Prompt';
 import { PromptService } from '../services/PromptService';
 
 export const usePrompts = () => {
@@ -24,7 +24,7 @@ export const usePrompts = () => {
     fetchPrompts();
   }, [fetchPrompts]);
 
-  const createPrompt = async (data: Omit<Prompt, 'id' | 'lastUpdate'>) => {
+  const createPrompt = async (data: PromptInput) => {
     try {
       setLoading(true);
       setError(null);
@@ -39,7 +39,7 @@ export const usePrompts = () => {
     }
   };
 
-  const updatePrompt = async (id: string, data: Partial<Omit<Prompt, 'id' | 'lastUpdate'>>) => {
+  const updatePrompt = async (id: string, data: PromptInput) => {
     try {
       setLoading(true);
       setError(null);

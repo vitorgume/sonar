@@ -27,20 +27,33 @@ public class ClientDataProvider implements ClientGateway {
     }
 
     @Override
-    public Optional<Client> findById(UUID userId, UUID id) {
+    public Optional<Client> findById(UUID id) {
+        return clientRepository.findById(id)
+                .map(ClientEntityMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Client> findByIdAndUserId(UUID id, UUID userId) {
         return clientRepository.findByIdAndUser_Id(id, userId)
                 .map(ClientEntityMapper::toDomain);
     }
 
     @Override
-    public List<Client> findAll(UUID userId) {
+    public List<Client> findAll() {
+        return clientRepository.findAll().stream()
+                .map(ClientEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Client> findAllByUserId(UUID userId) {
         return clientRepository.findAllByUser_Id(userId).stream()
                 .map(ClientEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteById(UUID userId, UUID id) {
-        clientRepository.deleteByIdAndUser_Id(id, userId);
+    public void deleteById(UUID id) {
+        clientRepository.deleteById(id);
     }
 }

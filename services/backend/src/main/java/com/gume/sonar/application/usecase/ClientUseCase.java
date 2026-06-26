@@ -17,34 +17,43 @@ public class ClientUseCase {
 
     private final ClientGateway clientGateway;
 
-    public Client create(UUID userId, Client client) {
+    public Client create(Client client, User authenticatedUser) {
+        client.setUser(authenticatedUser);
         if (client.getCreationDate() == null) {
             client.setCreationDate(LocalDateTime.now());
         }
-
-        client.setUser(User.builder().id(userId).build());
         return clientGateway.save(client);
     }
 
-    public Client findById(UUID userId, UUID id) {
-        return clientGateway.findById(userId, id)
+    public Client findById(UUID id) {
+        return clientGateway.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
     }
 
-    public List<Client> findAll(UUID userId) {
-        return clientGateway.findAll(userId);
+    public List<Client> findAll() {
+        return clientGateway.findAll();
     }
 
-    public Client update(UUID userId, UUID id, Client client) {
-        Client existingClient = findById(userId, id);
+    public Client findByIdAndUserId(UUID id, UUID userId) {
+        return clientGateway.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ClientNotFoundException(id));
+    }
+
+    public List<Client> findAllByUserId(UUID userId) {
+        return clientGateway.findAllByUserId(userId);
+    }
+
+    public Client update(UUID id, Client client, User authenticatedUser) {
+        Client existingClient = findByIdAndUserId(id, authenticatedUser.getId());
         
         existingClient.setName(client.getName());
+        existingClient.setUser(authenticatedUser);
         
         return clientGateway.save(existingClient);
     }
 
-    public void delete(UUID userId, UUID id) {
-        Client existingClient = findById(userId, id);
-        clientGateway.deleteById(userId, existingClient.getId());
+    public void delete(UUID id, UUID userId) {
+        Client existingClient = findByIdAndUserId(id, userId);
+        clientGateway.deleteById(existingClient.getId());
     }
 }
