@@ -75,13 +75,11 @@ export const useClients = () => {
 
   return {
     clients,
-    users, // <-- SOLUÇÃO: Exportando a variável users aqui!
     isLoading,
     error,
     createClient,
     updateClient,
     deleteClient,
-    refreshClients: fetchClients,
-    refreshUsers: fetchUsers // Adicionado também caso precise recarregar os usuários depois
+    refreshClients: fetchClients
   };
 };
