@@ -19,7 +19,7 @@ export const useAuth = () => {
       // Salva no Contexto/LocalStorage através do AuthContext
       signIn({
         userId: response.userId,
-        name: response.name || 'Usuário',
+        name: response.email || 'emailusuario@gmail.com',
       });
       
       // Redirect to report management screen

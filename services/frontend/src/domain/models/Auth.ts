@@ -5,6 +5,6 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   userId: string;
-  name: string;
+  email: string;
   token: string;
 }

@@ -32,7 +32,7 @@ public class LoginUseCase {
 
         return LoginResponse.builder()
                 .userId(user.getId())
-                .name(user.getName())
+                .email(user.getEmail())
                 .token(token)
                 .build();
     }

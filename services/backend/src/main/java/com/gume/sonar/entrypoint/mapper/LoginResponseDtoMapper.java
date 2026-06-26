@@ -12,7 +12,7 @@ public class LoginResponseDtoMapper {
 
         return LoginResponseDto.builder()
                 .userId(domain.getUserId())
-                .name(domain.getName())
+                .email(domain.getEmail())
                 .token(domain.getToken())
                 .build();
     }
@@ -24,7 +24,7 @@ public class LoginResponseDtoMapper {
 
         return LoginResponse.builder()
                 .userId(dto.getUserId())
-                .name(dto.getName())
+                .email(dto.getEmail())
                 .token(dto.getToken())
                 .build();
     }
